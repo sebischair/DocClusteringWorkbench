@@ -27,7 +27,8 @@ public class SparkPipelineFactory {
     private String pipelineName;
     private JsonNode settings;
     private DataLoaderFactory dataLoaderFactory;
-    private Tokenizer tokenizer;
+    //private Tokenizer tokenizer;
+    private RegexTokenizer tokenizer;
     private StopWordsRemover stopWordsRemover;
     private Word2Vec word2Vec;
     private HashingTF hashingTF;
@@ -48,6 +49,7 @@ public class SparkPipelineFactory {
         System.out.println(path);
         ISparkDataLoader dataLoader = dataLoaderFactory.getDataLoader(type);
         dataSet = dataLoader.loadData(path);
+
     }
 
     public SparkPipelineFactory(JsonNode settings) {
@@ -59,10 +61,13 @@ public class SparkPipelineFactory {
     }
 
     private void initPipelineStages() {
-        tokenizer = new Tokenizer()
+        /*tokenizer = new Tokenizer()
                 .setInputCol("document")
-                .setOutputCol("words");
-
+                .setOutputCol("words");*/
+        tokenizer = new RegexTokenizer()
+                .setInputCol("document")
+                .setOutputCol("words")
+                .setPattern("\\W");
 
         stopWordsRemover = new StopWordsRemover()
                 .setInputCol(tokenizer.getOutputCol())
@@ -182,8 +187,6 @@ public class SparkPipelineFactory {
 
     private void saveResults(Dataset<Row> results) {
         results.write().format("json").mode("overwrite").save("myresources/results/" + pipelineName);
-        //uncomment below line to save to Spark Warehouse
-        //results.write().mode(SaveMode.Overwrite).saveAsTable(pipelineName);
     }
 
     public Dataset<Row> trainPipeline(String pipelineName, String path, String type) {

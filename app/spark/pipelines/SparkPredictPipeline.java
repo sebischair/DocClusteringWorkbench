@@ -7,10 +7,7 @@ import interfaces.IPredictPipeline;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.mapred.FileAlreadyExistsException;
 import org.apache.spark.ml.PipelineModel;
-import org.apache.spark.ml.feature.StopWordsRemover;
-import org.apache.spark.ml.feature.Tokenizer;
-import org.apache.spark.ml.feature.Word2Vec;
-import org.apache.spark.ml.feature.Word2VecModel;
+import org.apache.spark.ml.feature.*;
 import org.apache.spark.ml.linalg.Vector;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.types.DataTypes;
@@ -20,8 +17,8 @@ import org.apache.spark.sql.types.StructType;
 import play.libs.Json;
 import services.PipelineService;
 import spark.SparkSessionComponent;
-import spark.ranking.IRankingStrategy;
-import spark.ranking.RankingStrategy;
+import spark.ranking.CosineSimilarity;
+import spark.ranking.JaccardCoefficient;
 import util.StaticFunctions;
 
 import java.io.File;
@@ -32,7 +29,8 @@ import static java.lang.Integer.parseInt;
 
 public class SparkPredictPipeline implements IPredictPipeline {
 
-    private final Tokenizer tokenizer;
+    //private final Tokenizer tokenizer;
+    private final RegexTokenizer tokenizer;
     private final StopWordsRemover stopWordsRemover;
     private PipelineModel predictModel;
     private String pipelineName;
@@ -44,20 +42,30 @@ public class SparkPredictPipeline implements IPredictPipeline {
     private String modelPath;
     private Dataset<Row> results;
     private Dataset<Row> clusters;
-    private IRankingStrategy rankingStrategy;
+    private CosineSimilarity cosineSimilarity;
+    private JaccardCoefficient jaccardCoefficient;
+    private Map<Long, Double> cosineSimilarityMap;
+    private Map<Long, Float> jaccardSimilarityMap;
 
 
     public SparkPredictPipeline(String pipelineName) {
-        rankingStrategy = new RankingStrategy().getRankingStrategy("cosineSimilarity");
+        cosineSimilarity = new CosineSimilarity();
+        jaccardCoefficient = new JaccardCoefficient();
         this.pipelineName = pipelineName;
         sparkSessionComponent = SparkSessionComponent.getSparkSessionComponent();
         spark = sparkSessionComponent.getSparkSession();
         modelPath = "myresources/models/" + pipelineName;
 
-        tokenizer = new Tokenizer()
+        tokenizer = new RegexTokenizer()
                 .setInputCol("document")
-                .setOutputCol("words");
+                .setOutputCol("words")
+                .setPattern("\\W");
 
+        /*tokenizer = new Tokenizer()
+                .setInputCol("document")
+                .setOutputCol("words")
+        ;
+*/
         stopWordsRemover = new StopWordsRemover()
                 .setInputCol(tokenizer.getOutputCol())
                 .setOutputCol("filtered");
@@ -66,7 +74,7 @@ public class SparkPredictPipeline implements IPredictPipeline {
     public ArrayNode predict(String textToCluster) {
         createSchema();
         readModel();
-        transfromText(textToCluster);
+        transformText(textToCluster);
         getClusterByLabel();
         ArrayNode mapResults = null;
         try {
@@ -95,7 +103,7 @@ public class SparkPredictPipeline implements IPredictPipeline {
         this.predictModel = PipelineModel.load(modelPath);
     }
 
-    private void transfromText(String textToCluster) {
+    private void transformText(String textToCluster) {
         List<Row> textInput = Arrays.asList(
                 RowFactory.create(textToCluster)
         );
@@ -106,8 +114,8 @@ public class SparkPredictPipeline implements IPredictPipeline {
     private void getClusterByLabel() {
         predictedLabel = results.select("cluster_label").first().getInt(0);
         Dataset<Row> cluster_table = PipelineService.getPipelineClusters(pipelineName);
-        Dataset<Row> results1 = cluster_table.filter("cluster_label=" + predictedLabel);
-        clusters = results1;
+        cluster_table.schema();
+        clusters = cluster_table.filter("cluster_label=" + predictedLabel);
     }
 
     private ArrayNode applyRanking() throws FileAlreadyExistsException, IOException {
@@ -117,38 +125,52 @@ public class SparkPredictPipeline implements IPredictPipeline {
                 .setMinCount(0).fit(clusters);
         Dataset<Row> clusterDocuments = model.transform(clusters);
         Dataset<Row> queryDocuments = model.transform(results);
-        Map<Long, Double> similarityMap = getSimilarityMap(clusterDocuments, queryDocuments);
-        TreeMap<Long, Double> sortedMap = StaticFunctions.sortByValues(similarityMap);
-        return getJsonFromSimilarityMap(sortedMap);
+        calculateSimilarities(clusterDocuments, queryDocuments);
+        TreeMap<Long, Double> sortedMap = StaticFunctions.sortByValues(cosineSimilarityMap);
+        return getJsonFromCosineSimilarityMap(sortedMap);
     }
 
-    private ArrayNode getJsonFromSimilarityMap(TreeMap<Long, Double> sortedMap) {
+    private ArrayNode getJsonFromCosineSimilarityMap(TreeMap<Long, Double> sortedMap) {
         ArrayNode array = new ArrayNode(new JsonNodeFactory(true));
         sortedMap.forEach((doc_id,doc_similarity)->{
             ObjectNode topDoc = (ObjectNode) Json.parse(clusters.filter("DOC_ID=" + doc_id).limit(1).toJSON().collectAsList().get(0));
             if(doc_similarity != null){
-                Float similarity = (doc_similarity.floatValue() * 100);
-                if(similarity > 0.0){
-                    topDoc.set("similarity", Json.toJson(String.format("%.2f", similarity)));
-                    array.add(topDoc);
-                }
+
+                Float cosinesimilarity = (doc_similarity.floatValue() * 100) > 0 ? Float.valueOf(doc_similarity.floatValue() * 100) : Float.valueOf(0);
+                topDoc.set("cosinesimilarity", Json.toJson(String.format("%.2f", cosinesimilarity)));
+
+                Float jaccardsimilarity = (jaccardSimilarityMap.get(doc_id))*100 > 0? jaccardSimilarityMap.get(doc_id) * 100 : 0;
+                topDoc.set("jaccardsimilarity", Json.toJson(String.format("%.2f", jaccardsimilarity)));
+
+                array.add(topDoc);
             }
         });
         return array;
     }
 
-    private Map<Long, Double> getSimilarityMap(Dataset<Row> clusterDocuments, Dataset<Row> queryDocuments) {
-        Map<Long, Double> similarityMap = new HashMap<>();
+    private void calculateSimilarities(Dataset<Row> clusterDocuments, Dataset<Row> queryDocuments) {
+        cosineSimilarityMap = new HashMap<>();
+        jaccardSimilarityMap = new HashMap<>();
         for (Row row : queryDocuments.collectAsList()) {
             Vector queryVector = (Vector) row.get(row.fieldIndex("vectors"));
+            Set<String> queryWords = new HashSet<>(row.getList(row.fieldIndex("filtered")));
             for (Row document : clusterDocuments.collectAsList()) {
                 Long documentId = document.getLong(document.fieldIndex("DOC_ID"));
+
+                //Cosine Similarity
                 Vector docVector = (Vector) document.get(document.fieldIndex("vectors"));
-                Double similarity = rankingStrategy.getSimilarity(queryVector, docVector);
-                similarityMap.put(documentId, similarity);
+                Double cosinesimilarity = cosineSimilarity.getSimilarity(queryVector, docVector);
+                cosineSimilarityMap.put(documentId, cosinesimilarity);
+
+                //Jaccard Similarity
+                Set<String> documentWords = new HashSet<>(document.getList(document.fieldIndex("filtered")));
+                Float jaccardSimilarity = jaccardCoefficient.jaccardSimilarity(queryWords, documentWords);
+                jaccardSimilarityMap.put(documentId, jaccardSimilarity);
+                System.out.println("Document_ID: "+ documentId + "  J-Similarity: "+jaccardSimilarity);
             }
         }
-        return similarityMap;
     }
+
+
 
 }
