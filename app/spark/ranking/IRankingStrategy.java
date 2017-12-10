@@ -1,8 +1,8 @@
 package spark.ranking;
 import org.apache.spark.ml.linalg.Vector;
-
+import org.apache.spark.sql.*;
 
 public interface IRankingStrategy {
     //applyRanking()
-    Double getSimilarity(Vector v1, Vector V2);
+    //Double getSimilarity(Row document1, Row document2);
 }

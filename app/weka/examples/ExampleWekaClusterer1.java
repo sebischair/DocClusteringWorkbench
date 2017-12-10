@@ -49,9 +49,6 @@ public class ExampleWekaClusterer1 {
             filter.setInputFormat(data);
             data = Filter.useFilter(data, filter);
 
-            //data.deleteAttributeAt(0);
-            //data.deleteAttributeAt(1);
-
             // save ARFF
             ArffSaver saver = new ArffSaver();
             saver.setInstances(data);
@@ -99,7 +96,6 @@ public class ExampleWekaClusterer1 {
             e.printStackTrace();
             ObjectNode results = new ObjectNode(new JsonNodeFactory(true));
             results.set("results", Json.toJson(e.getMessage()));
-            //return null;
             return Json.toJson(results);
         }
 

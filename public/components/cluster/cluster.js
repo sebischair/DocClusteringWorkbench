@@ -130,13 +130,12 @@ classifyApp.controller('ExecutePipelineCtrl', ['scAuth', 'scData', 'scModel', 'p
             data.textToClassify = ""+self.textToClassify;
             $http.post('/clustering/pipeline/predict', data).then(function (response) {
                 self.documents = response.data.sort(function(a,b){
-                  return b.similarity - a.similarity;
+                  return b.cosinesimilarity - a.cosinesimilarity;
                 });
                 self.showResults = true;
                 self.isPredicting = false;
                 $("#progress").css({
                     "visibility": "hidden"
-
                 });
             });
         }
