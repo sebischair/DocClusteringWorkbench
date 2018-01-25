@@ -161,7 +161,6 @@ public class SparkPredictPipeline implements IPredictPipeline {
                 Set<String> documentWords = new HashSet<>(document.getList(document.fieldIndex("filtered")));
                 Float jaccardSimilarity = jaccardCoefficient.jaccardSimilarity(queryWords, documentWords);
                 jaccardSimilarityMap.put(documentId, jaccardSimilarity);
-                System.out.println("Document_ID: "+ documentId + "  J-Similarity: "+jaccardSimilarity);
             }
         }
     }
