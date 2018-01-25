@@ -28,7 +28,7 @@ public class SparkStringColumnUtil {
     * */
     public static Dataset<Row> removePunctuation(String columnName, Dataset<Row> inputDataset) {
         inputDataset = inputDataset.withColumn("document", functions.regexp_replace(inputDataset.col(columnName), "^\\w", " "));
-        return inputDataset.withColumn("document", functions.regexp_replace(inputDataset.col(columnName), "[({<,#'*+~\\/&%|$§\"_-!?:;>})]", " "));
+        return inputDataset.withColumn("document", functions.regexp_replace(inputDataset.col(columnName), "[({<,#'*+~\\/&%|$§\"_\\-!?:;>})]", " "));
     }
 
     public static Dataset<Row> toLowerCase(String columnName, Dataset<Row> inputDataset){
