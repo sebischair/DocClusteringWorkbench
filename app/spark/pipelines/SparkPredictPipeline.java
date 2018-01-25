@@ -61,11 +61,6 @@ public class SparkPredictPipeline implements IPredictPipeline {
                 .setOutputCol("words")
                 .setPattern("\\W");
 
-        /*tokenizer = new Tokenizer()
-                .setInputCol("document")
-                .setOutputCol("words")
-        ;
-*/
         stopWordsRemover = new StopWordsRemover()
                 .setInputCol(tokenizer.getOutputCol())
                 .setOutputCol("filtered");
@@ -170,7 +165,5 @@ public class SparkPredictPipeline implements IPredictPipeline {
             }
         }
     }
-
-
 
 }

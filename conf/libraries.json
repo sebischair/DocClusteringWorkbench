@@ -19,7 +19,14 @@
           },
           {
             "name": "Bisecting-KMeans",
-            "id": "spark-bi-kmeans"
+            "id": "spark-bi-kmeans",
+            "options": [{
+              "name": "K-value",
+              "value": 20
+            },{
+              "name": "iterations",
+              "value": 10
+            }]
           }
         ],
         "preprocessors": [
