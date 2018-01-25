@@ -21,7 +21,6 @@ public class JaccardCoefficient{
         Integer intersection_length = intersection.size();
 
         Float jaccardIndex = Float.valueOf(intersection_length) / Float.valueOf(union_length);
-        System.out.println("Jaccard Index: " + jaccardIndex);
         return jaccardIndex;
     }
 
