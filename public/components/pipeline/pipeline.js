@@ -102,6 +102,8 @@ pipelineApp.controller('ClusterPipelineCtrl', ['scAuth', 'scData', 'scModel', 'p
     self.algorithms = undefined;
     self.workspace = undefined;
     self.selectedType = undefined;
+    self.dataset = "";
+    self.mongoProjectKey = "";
 
     self.onLibrarySelect = function (id) {
         self.selectedLibrary = self.libraries[id - 1];
@@ -173,6 +175,10 @@ pipelineApp.controller('ClusterPipelineCtrl', ['scAuth', 'scData', 'scModel', 'p
         });
     };
 
+    self.linkMongo = function() {
+        self.mongo = true;
+    };
+
     self.getPages = function () {
         self.pages = [];
         self.attributeType = "Page";
@@ -215,6 +221,7 @@ pipelineApp.controller('ClusterPipelineCtrl', ['scAuth', 'scData', 'scModel', 'p
         self.workspaces = undefined;
         self.workspace = undefined;
         self.scFileName = undefined;
+        self.mongoProjectKey = undefined;
     };
 
     self.createClusteringPipeline = function () {
@@ -234,6 +241,8 @@ pipelineApp.controller('ClusterPipelineCtrl', ['scAuth', 'scData', 'scModel', 'p
         });
         if (self.scFileName) {
             self.dataset = self.scFileName;
+        } else {
+            self.dataset = pipelineName;
         }
         self.algorithm.options = self.algoOptions;
         var miningAttr = [];
@@ -259,7 +268,8 @@ pipelineApp.controller('ClusterPipelineCtrl', ['scAuth', 'scData', 'scModel', 'p
                 dataset: self.dataset,
                 algorithm: self.algorithm,
                 preprocessors: self.preprocessors,
-                transformer: self.transformer
+                transformer: self.transformer,
+                mongoProjectKey: self.mongoProjectKey
             }
         };
         $http.post("/clustering/pipeline/create", data)

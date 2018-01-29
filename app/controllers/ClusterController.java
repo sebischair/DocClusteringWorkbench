@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import model.PersistentEntity;
+import model.amelie.Issue;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import play.Logger;
@@ -76,7 +77,7 @@ public class ClusterController extends Controller {
         return ok(Json.toJson(jsonResults));
     }
 
-    public Result getAllClusterPipelines(){
+    public Result getAllClusterPipelines() {
         JsonNode pipelines_json = Json.toJson(Json.parse("{}"));
         List<? extends PersistentEntity> pipelines = PipelineService.getAllClusterPipelines();
         JsonNode deserializedPipelines = Json.parse(StaticFunctions.deserializeToJSON(pipelines));
@@ -93,7 +94,8 @@ public class ClusterController extends Controller {
             return ok(Json.parse("{results: null}"));
         }
     }
-    public Result datasetUpload(){
+
+    public Result datasetUpload() {
         Http.MultipartFormData<File> body = request().body().asMultipartFormData();
         Http.MultipartFormData.FilePart<File> dataset = body.getFile("file");
         if (dataset != null) {
@@ -108,11 +110,12 @@ public class ClusterController extends Controller {
         }
     }
 
-    public Result createClusterPipeline(){
+    public Result createClusterPipeline() {
         JsonNode data = request().body().asJson().get("pipeline");
-        String filepath = data.get("dataset").asText();
+        String filepath = data.has("dataset") ? data.get("dataset").asText("") : "temp";
+        String projectKey = data.get("mongoProjectKey").asText("");
         Logger.info(data.get("scLink").asText());
-        if(data.get("scLink").asBoolean()){
+        if(data.get("scLink").asBoolean()) {
             String filename = data.get("scData").get("filename").asText();
             filepath = "myresources/datasets/"+filename;
             String scTypeURL = data.get("scData").get("type").get("href").asText();
@@ -130,7 +133,19 @@ public class ClusterController extends Controller {
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
-            //return ok(Json.toJson(hs.getSCData(scTypeURL,miningAttributes)));
+        } else if(projectKey != "") {
+            Issue issueModel = new Issue();
+            ArrayNode decisions = issueModel.findAllDesignDecisionsInAProject(projectKey);
+            List<String> miningAttributes = new ArrayList<>();
+            miningAttributes.add("summary");
+            miningAttributes.add("description");
+            filepath = "myresources/datasets/" + data.get("name").asText("");
+            StringBuilder records = jsonToCSVConverter(decisions, miningAttributes);
+            try {
+                saveDataAsCSV(filepath, records);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
         }
         JsonNode results = Json.toJson(Json.parse("{}"));
 

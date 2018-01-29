@@ -3,7 +3,7 @@ package util;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
-import controllers.MorphiaObject;
+import db.DefaultMongoClient;
 import model.Label;
 import model.Pipeline;
 import play.mvc.Result;
@@ -60,7 +60,7 @@ public class StaticFunctions {
         List<DBObject> dbObjList = new ArrayList<>(objList.size());
         DBObject dbObj;
         for (Object obj : objList) {
-            dbObj = MorphiaObject.morphia.toDBObject(obj);
+            dbObj = DefaultMongoClient.morphia.toDBObject(obj);
             for (String removeAttribute : removeAttributes) {
                 dbObj.removeField(removeAttribute);
             }
@@ -71,7 +71,7 @@ public class StaticFunctions {
 
     public static String deserializeToJSON(Object obj, String... removeAttributes) {
         DBObject dbObj;
-        dbObj = MorphiaObject.morphia.toDBObject(obj);
+        dbObj = DefaultMongoClient.morphia.toDBObject(obj);
         for (String removeAttribute : removeAttributes) {
             dbObj.removeField(removeAttribute);
         }
