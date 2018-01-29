@@ -41,8 +41,9 @@ libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-sql" % "2.2.0",
   "org.apache.spark" %% "spark-streaming" % "2.2.0",
   "org.apache.spark" %% "spark-mllib" % "2.2.0",
-  "org.apache.hadoop" % "hadoop-client" % "2.7.2"
-
+  "org.apache.hadoop" % "hadoop-client" % "2.7.2",
+  // HTML parser
+  "net.htmlparser.jericho" % "jericho-html" % "3.3"
 )
 
 /*libraryDependencies += "org.nd4j" % "nd4j-native-platform" % "0.9.1" classifier "windows-x86_64"*/
