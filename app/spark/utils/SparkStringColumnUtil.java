@@ -13,9 +13,9 @@ public class SparkStringColumnUtil {
     public static Dataset<Row> concatStringTypeColumns(String[] columns, Dataset<Row> inputDataset) {
         int noofcolumns = columns.length;
         Dataset<Row> newDataset = inputDataset;
-        newDataset = newDataset.withColumn("document", newDataset.col(columns[0]));
+        newDataset = newDataset.withColumn("document", newDataset.col(columns[1]));
         newDataset.show();
-        for (int i = 1; i < noofcolumns; i++) {
+        for (int i = 2; i < noofcolumns; i++) {
             newDataset = newDataset.withColumn("document", functions.concat_ws(" ", newDataset.col("document"), newDataset.col(columns[i])));
         }
         newDataset.show();
@@ -28,7 +28,7 @@ public class SparkStringColumnUtil {
     * */
     public static Dataset<Row> removePunctuation(String columnName, Dataset<Row> inputDataset) {
         inputDataset = inputDataset.withColumn("document", functions.regexp_replace(inputDataset.col(columnName), "^\\w", " "));
-        return inputDataset.withColumn("document", functions.regexp_replace(inputDataset.col(columnName), "[({<,#'*+~\\/&%|$§\"_\\-\\*!?:;>})]", " "));
+        return inputDataset.withColumn("document", functions.regexp_replace(inputDataset.col(columnName), "\\p{Punct}|\\d", " "));
     }
 
     public static Dataset<Row> toLowerCase(String columnName, Dataset<Row> inputDataset){

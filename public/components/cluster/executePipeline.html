@@ -37,7 +37,9 @@
             <thead>
             <tr>
                 <th>DOC Id</th>
-                <th>Document</th>
+                <th>DOC Key</th>
+                <th>Summary</th>
+                <th>Description</th>
                 <th>Cosine Similarity</th>
                 <th>Jaccard Similarity</th>
             </tr>
@@ -45,7 +47,9 @@
             <tbody>
             <tr ng-repeat="document in vm3.documents">
                 <td> {{document.DOC_ID}} </td>
-                <td> {{document.document}} </td>
+                <td> {{document._c0}} </td>
+                <td> {{document._c1}} </td>
+                <td> {{document._c2}} </td>
                 <td> {{document.cosinesimilarity}} </td>
                 <td> {{document.jaccardsimilarity}} </td>
             </tr>
