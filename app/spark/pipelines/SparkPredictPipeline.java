@@ -127,17 +127,18 @@ public class SparkPredictPipeline implements IPredictPipeline {
 
     private ArrayNode getJsonFromCosineSimilarityMap(TreeMap<Long, Double> sortedMap) {
         ArrayNode array = new ArrayNode(new JsonNodeFactory(true));
-        sortedMap.forEach((doc_id,doc_similarity)->{
+        sortedMap.forEach((doc_id, doc_similarity) -> {
             ObjectNode topDoc = (ObjectNode) Json.parse(clusters.filter("DOC_ID=" + doc_id).limit(1).toJSON().collectAsList().get(0));
-            if(doc_similarity != null){
+            if (doc_similarity != null) {
 
-                Float cosinesimilarity = (doc_similarity.floatValue() * 100) > 0 ? Float.valueOf(doc_similarity.floatValue() * 100) : Float.valueOf(0);
-                topDoc.set("cosinesimilarity", Json.toJson(String.format("%.2f", cosinesimilarity)));
+                Float cosineSimilarity = doc_similarity.floatValue() * 100;
+                Float jaccardsimilarity = (jaccardSimilarityMap.get(doc_id)) * 100;
 
-                Float jaccardsimilarity = (jaccardSimilarityMap.get(doc_id))*100 > 0? jaccardSimilarityMap.get(doc_id) * 100 : 0;
-                topDoc.set("jaccardsimilarity", Json.toJson(String.format("%.2f", jaccardsimilarity)));
-
-                array.add(topDoc);
+                if (cosineSimilarity >= 40 || jaccardsimilarity >= 8) {
+                    topDoc.set("cosinesimilarity", Json.toJson(String.format("%.2f", cosineSimilarity)));
+                    topDoc.set("jaccardsimilarity", Json.toJson(String.format("%.2f", jaccardsimilarity)));
+                    array.add(topDoc);
+                }
             }
         });
         return array;
