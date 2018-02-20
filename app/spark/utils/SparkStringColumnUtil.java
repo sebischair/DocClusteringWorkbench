@@ -13,9 +13,10 @@ public class SparkStringColumnUtil {
     public static Dataset<Row> concatStringTypeColumns(String[] columns, Dataset<Row> inputDataset) {
         int noofcolumns = columns.length;
         Dataset<Row> newDataset = inputDataset;
-        newDataset = newDataset.withColumn("document", newDataset.col(columns[1]));
+        System.out.println(columns[0]);
         newDataset.show();
-        for (int i = 2; i < noofcolumns; i++) {
+        newDataset = newDataset.withColumn("document", newDataset.col(columns[1]));
+        for(int i = 2; i < noofcolumns; i++) {
             newDataset = newDataset.withColumn("document", functions.concat_ws(" ", newDataset.col("document"), newDataset.col(columns[i])));
         }
         newDataset.show();

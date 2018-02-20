@@ -76,7 +76,7 @@ public class Issue {
             JsonNode fields = obj.get("fields");
             issue.put("summary", fields.get("summary").asText(""));
 
-            String description = fields.get("description") != null ? fields.get("description").asText("") : "";
+            String description = fields.get("description") != null ? fields.get("description").asText("") : "temp";
             issue.put("description", description);
 
             issue.put("created", fields.get("created").asText(""));

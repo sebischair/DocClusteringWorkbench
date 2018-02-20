@@ -51,7 +51,6 @@ public class BaseClusterPipeline implements ISparkClusterPipeline {
                 .setVectorSize(100)
                 .setMinCount(0);
 
-
         kMeans = new KMeans()
                 .setK(20)
                 .setFeaturesCol("features")
@@ -64,7 +63,6 @@ public class BaseClusterPipeline implements ISparkClusterPipeline {
 
 
     public Dataset<Row> trainPipeline(String path, String pipelineName) {
-
         Dataset<Row> dataSet = dataLoader.loadData(path);
         dataSet = addIDColumn(dataSet);
         String[] columns = dataSet.columns();

@@ -9,7 +9,9 @@ import static spark.utils.SparkStringColumnUtil.toLowerCase;
 
 public class SparkCommonPreprocessor {
     public static Dataset<Row> commonPreprocess(Dataset<Row> dataset, String[] listOfStringAttributeNames) {
-        dataset = concatStringTypeColumns(listOfStringAttributeNames, dataset);
+        if(listOfStringAttributeNames != null) {
+            dataset = concatStringTypeColumns(listOfStringAttributeNames, dataset);
+        }
         dataset = toLowerCase("document", dataset);
         dataset = removePunctuation("document", dataset);
         return dataset;

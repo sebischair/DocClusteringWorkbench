@@ -62,13 +62,11 @@ public class FileUtil {
             if(jsonObject.isArray()) Logger.info("One of columns was found to be an Array and was ignored");
             for(int i=0; i<attributes.size(); i++) {
                 String attributeName = attributes.get(i);
-                String attributeValue = jsonObject.get(attributeName).asText("");
-
-                attributeValue = attributeValue.replaceAll(",", "");
-                attributeValue = HtmlUtil.convertToPlaintext(attributeValue);
+                String attributeValue = jsonObject.get(attributeName).asText(" ");
+                if(attributeName != "name")
+                    attributeValue = attributeValue.replaceAll("[^a-zA-Z0-9\\s]", " ").replaceAll("^\\w{1,10}\\b", " ").replaceAll("\\r\\n|\\r|\\n", " ");;
                 sb.append(attributeValue);
-
-                if(i != attributes.size()-1) sb.append(",");
+                sb.append(",");
             }
             sb.append("\n");
         }

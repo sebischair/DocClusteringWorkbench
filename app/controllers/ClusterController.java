@@ -1,6 +1,5 @@
 package controllers;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -18,23 +17,21 @@ import services.HelperService;
 import services.PipelineService;
 import spark.clusterers.BaseClusterPipeline;
 import spark.dataloaders.CSVDataLoader;
-import spark.examples.ExamplePredictPipeline1;
 import spark.pipelines.SparkPipelineFactory;
 import spark.pipelines.SparkPredictPipeline;
 import util.StaticFunctions;
 
 import javax.inject.Inject;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static java.lang.Integer.parseInt;
 import static spark.utils.FileUtil.jsonToCSVConverter;
 import static spark.utils.FileUtil.saveDataAsCSV;
-import static spark.utils.SparkDatasetUtil.clusterTableToJson;
-import static spark.utils.SparkDatasetUtil.datasetToJson;
-import static spark.utils.SparkDatasetUtil.extractClusterTablefromDataset;
+import static spark.utils.SparkDatasetUtil.*;
 
 
 public class ClusterController extends Controller {
@@ -135,8 +132,10 @@ public class ClusterController extends Controller {
             }
         } else if(projectKey != "") {
             Issue issueModel = new Issue();
+            //ArrayNode decisions = issueModel.findAllIssuesInAProject(projectKey);
             ArrayNode decisions = issueModel.findAllDesignDecisionsInAProject(projectKey);
             List<String> miningAttributes = new ArrayList<>();
+            miningAttributes.add("name");
             miningAttributes.add("summary");
             miningAttributes.add("description");
             filepath = "myresources/datasets/" + data.get("name").asText("");
@@ -173,22 +172,21 @@ public class ClusterController extends Controller {
         JsonNode pipeline = request().body().asJson().get("pipeline");
         String textToCluster = request().body().asJson().get("textToClassify").asText();
         String pipelineName = pipeline.get("name").asText();
-        JsonNode results = Json.toJson(Json.parse("{}"));
+        ObjectNode results = Json.newObject();
         switch(pipeline.get("library").asInt()){
-            case 2:{
-                Logger.info("....Building in Progress.....");
-                //Do Nothing : In Progress
-                ((ObjectNode) results).set("results", Json.toJson("In Progress"));
-            }
-            break;
             case 1:
                 Logger.info(".....Prediction Library: Spark..................");
                 SparkPredictPipeline predictPipeline = new SparkPredictPipeline(pipelineName);
                 ArrayNode result = predictPipeline.predict(textToCluster);
-                results = Json.toJson(result);
+                results.put("result", Json.toJson(result));
+                break;
+            case 2:
+                Logger.info("....Building in Progress.....");
+                //Do Nothing : In Progress
+                results.set("result", Json.toJson("In Progress"));
                 break;
             default:
-                ((ObjectNode) results).set("results", Json.toJson("Not Found"));
+                results.set("result", Json.toJson("Not Found"));
                 Logger.info(".....Prediction Library: Not Found..................");
         }
         return ok(results);
