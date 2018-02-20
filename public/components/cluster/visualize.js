@@ -32,7 +32,7 @@ function draw() {
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    d3.json("http://localhost:9000/pipeline/clusters/"+pipelineName, function (error, clusters) {
+    d3.json("http://localhost:9001/pipeline/clusters/"+pipelineName, function (error, clusters) {
         if (error) throw error;
         root = clusters;
         root.x0 = height / 2;
@@ -47,7 +47,7 @@ function draw() {
             }
 
             if (d.DOC_ID) {
-                d.name = "DOC " + d.DOC_ID;
+                d.name = d._c0;
             }
 
             if (d.members) {

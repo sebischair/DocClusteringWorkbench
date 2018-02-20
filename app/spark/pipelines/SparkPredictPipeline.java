@@ -17,6 +17,7 @@ import org.apache.spark.sql.types.StructType;
 import play.libs.Json;
 import services.PipelineService;
 import spark.SparkSessionComponent;
+import spark.preprocessing.SparkCommonPreprocessor;
 import spark.ranking.CosineSimilarity;
 import spark.ranking.JaccardCoefficient;
 import util.StaticFunctions;
@@ -29,19 +30,15 @@ import static java.lang.Integer.parseInt;
 
 public class SparkPredictPipeline implements IPredictPipeline {
 
-    //private final Tokenizer tokenizer;
-    private final RegexTokenizer tokenizer;
-    private final StopWordsRemover stopWordsRemover;
     private PipelineModel predictModel;
     private String pipelineName;
-    private String textToClassify;
     private Integer predictedLabel;
     private StructType schema;
     private SparkSessionComponent sparkSessionComponent;
     private SparkSession spark;
     private String modelPath;
     private Dataset<Row> results;
-    private Dataset<Row> clusters;
+    private Dataset<Row> cluster;
     private CosineSimilarity cosineSimilarity;
     private JaccardCoefficient jaccardCoefficient;
     private Map<Long, Double> cosineSimilarityMap;
@@ -55,15 +52,6 @@ public class SparkPredictPipeline implements IPredictPipeline {
         sparkSessionComponent = SparkSessionComponent.getSparkSessionComponent();
         spark = sparkSessionComponent.getSparkSession();
         modelPath = "myresources/models/" + pipelineName;
-
-        tokenizer = new RegexTokenizer()
-                .setInputCol("document")
-                .setOutputCol("words")
-                .setPattern("\\W");
-
-        stopWordsRemover = new StopWordsRemover()
-                .setInputCol(tokenizer.getOutputCol())
-                .setOutputCol("filtered");
     }
 
     public ArrayNode predict(String textToCluster) {
@@ -71,7 +59,7 @@ public class SparkPredictPipeline implements IPredictPipeline {
         readModel();
         transformText(textToCluster);
         getClusterByLabel();
-        ArrayNode mapResults = null;
+        ArrayNode mapResults = Json.newArray();
         try {
             mapResults = applyRanking();
         } catch (FileAlreadyExistsException f) {
@@ -99,10 +87,9 @@ public class SparkPredictPipeline implements IPredictPipeline {
     }
 
     private void transformText(String textToCluster) {
-        List<Row> textInput = Arrays.asList(
-                RowFactory.create(textToCluster)
-        );
+        List<Row> textInput = Arrays.asList(RowFactory.create(textToCluster));
         Dataset<Row> inputDocuments = spark.createDataFrame(textInput, this.schema);
+        inputDocuments = SparkCommonPreprocessor.commonPreprocess(inputDocuments, null);
         results = predictModel.transform(inputDocuments);
     }
 
@@ -110,15 +97,15 @@ public class SparkPredictPipeline implements IPredictPipeline {
         predictedLabel = results.select("cluster_label").first().getInt(0);
         Dataset<Row> cluster_table = PipelineService.getPipelineClusters(pipelineName);
         cluster_table.schema();
-        clusters = cluster_table.filter("cluster_label=" + predictedLabel);
+        cluster = cluster_table.filter("cluster_label=" + predictedLabel);
     }
 
-    private ArrayNode applyRanking() throws FileAlreadyExistsException, IOException {
+    private ArrayNode applyRanking() throws IOException {
         Word2VecModel model = new Word2Vec().setInputCol("filtered")
                 .setOutputCol("vectors")
                 .setVectorSize(100)
-                .setMinCount(0).fit(clusters);
-        Dataset<Row> clusterDocuments = model.transform(clusters);
+                .setMinCount(0).fit(cluster);
+        Dataset<Row> clusterDocuments = model.transform(cluster);
         Dataset<Row> queryDocuments = model.transform(results);
         calculateSimilarities(clusterDocuments, queryDocuments);
         TreeMap<Long, Double> sortedMap = StaticFunctions.sortByValues(cosineSimilarityMap);
@@ -128,7 +115,7 @@ public class SparkPredictPipeline implements IPredictPipeline {
     private ArrayNode getJsonFromCosineSimilarityMap(TreeMap<Long, Double> sortedMap) {
         ArrayNode array = new ArrayNode(new JsonNodeFactory(true));
         sortedMap.forEach((doc_id, doc_similarity) -> {
-            ObjectNode topDoc = (ObjectNode) Json.parse(clusters.filter("DOC_ID=" + doc_id).limit(1).toJSON().collectAsList().get(0));
+            ObjectNode topDoc = (ObjectNode) Json.parse(cluster.filter("DOC_ID=" + doc_id).limit(1).toJSON().collectAsList().get(0));
             if (doc_similarity != null) {
 
                 Float cosineSimilarity = doc_similarity.floatValue() * 100;
