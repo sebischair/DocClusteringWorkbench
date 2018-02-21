@@ -1,12 +1,8 @@
 package model;
 
-import controllers.MorphiaObject;
 import org.bson.types.ObjectId;
 import org.mongodb.morphia.annotations.*;
-import org.mongodb.morphia.query.Query;
-import org.mongodb.morphia.query.UpdateOperations;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -48,81 +44,6 @@ public class Pipeline extends  PersistentEntity {
         this.stages = stages;
         this.modelPath = model_path;
         this.createdAt = created_at;
-    }
-
-    public boolean updateClassifier(String pipelineName, String classifier) {
-        try {
-            Query<Pipeline> query = (Query<Pipeline>) MorphiaObject.datastore.createQuery(this.getClass()).field("name").equalIgnoreCase(pipelineName);
-            UpdateOperations<Pipeline> ops = (UpdateOperations<Pipeline>) MorphiaObject.datastore.createUpdateOperations(this.getClass()).set("classifier", classifier);
-            MorphiaObject.datastore.update(query, ops);
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public boolean updateModelPath(String pipelineName, String modelPath) {
-        try {
-            Query<Pipeline> query = (Query<Pipeline>) MorphiaObject.datastore.createQuery(this.getClass()).field("name").equalIgnoreCase(pipelineName);
-            UpdateOperations<Pipeline> ops = (UpdateOperations<Pipeline>) MorphiaObject.datastore.createUpdateOperations(this.getClass()).set("modelPath", modelPath);
-            MorphiaObject.datastore.update(query, ops);
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public boolean addNewLabel(String pipelineName, String labelName, String labelPath, String labelId, String labelType) {
-        try {
-            Label label = new Label(labelName, labelPath, labelId, labelType);
-            Query<Pipeline> query = (Query<Pipeline>) MorphiaObject.datastore.createQuery(this.getClass()).field("name").equalIgnoreCase(pipelineName);
-            UpdateOperations<Pipeline> ops = (UpdateOperations<Pipeline>) MorphiaObject.datastore.createUpdateOperations(this.getClass()).add("labels", label, false);
-            MorphiaObject.datastore.update(query, ops);
-            return true;
-        } catch (Exception exp) {
-            exp.printStackTrace();
-        }
-        return false;
-    }
-
-    public boolean removeLabel(String pipelineName, String labelName, String labelPath, String labelId, String labelType) {
-        try {
-            Label label = new Label(labelName, labelPath, labelId, labelType);
-            Query<Pipeline> query = (Query<Pipeline>) MorphiaObject.datastore.createQuery(this.getClass()).field("name").equalIgnoreCase(pipelineName);
-            UpdateOperations<Pipeline> ops = (UpdateOperations<Pipeline>) MorphiaObject.datastore.createUpdateOperations(this.getClass()).removeAll("labels", label);
-            MorphiaObject.datastore.update(query, ops);
-            return true;
-        } catch (Exception exp) {
-            exp.printStackTrace();
-        }
-        return false;
-    }
-
-    public boolean updateMiningAttributes(String pipelineName, ArrayList<String> miningAttributes) {
-        try {
-            Query<Pipeline> query = (Query<Pipeline>) MorphiaObject.datastore.createQuery(this.getClass()).field("name").equalIgnoreCase(pipelineName);
-            UpdateOperations<Pipeline> ops = (UpdateOperations<Pipeline>) MorphiaObject.datastore.createUpdateOperations(this.getClass()).set("miningAttributes", miningAttributes);
-            MorphiaObject.datastore.update(query, ops);
-            return true;
-        } catch (Exception exp) {
-            exp.printStackTrace();
-        }
-        return false;
-    }
-
-    public boolean updateLabel(String pipelineName, String tag) {
-        try {
-            Query<Pipeline> query = (Query<Pipeline>) MorphiaObject.datastore.createQuery(this.getClass()).field("name").equalIgnoreCase(pipelineName);
-            UpdateOperations<Pipeline> ops = (UpdateOperations<Pipeline>) MorphiaObject.datastore.createUpdateOperations(this.getClass()).set("tag", tag);
-            MorphiaObject.datastore.update(query, ops);
-            return true;
-        } catch (Exception exp) {
-            exp.printStackTrace();
-        }
-        return false;
-
     }
 
     public String getName() {

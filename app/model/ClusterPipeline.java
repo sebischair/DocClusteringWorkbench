@@ -1,16 +1,16 @@
 package model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.bson.types.ObjectId;
-import org.mongodb.morphia.annotations.*;
+import org.mongodb.morphia.annotations.Entity;
+import org.mongodb.morphia.annotations.Id;
+import org.mongodb.morphia.annotations.IndexOptions;
+import org.mongodb.morphia.annotations.Indexed;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity("cluster-pipelines")
 public class ClusterPipeline  extends PersistentEntity{
-
-
 
     @Id
     private ObjectId _id;
@@ -29,7 +29,6 @@ public class ClusterPipeline  extends PersistentEntity{
     private List<String> miningAttributes;
 
     public ClusterPipeline(){
-
     }
 
     public ClusterPipeline(String href, String name, String library, Algorithm algorithm, String transformer, String dataset){
@@ -37,27 +36,6 @@ public class ClusterPipeline  extends PersistentEntity{
         this.href = href;
         this.library = library;
         this.algorithm = algorithm;
-        this.transformer = transformer;
-        this.dataset = dataset;
-    }
-
-    public ClusterPipeline(String href, String name, String library, Algorithm algorithm, String transformer, String dataset, SCTypeEntity type, List<String> miningAttributes){
-        this.name = name;
-        this.href = href;
-        this.library = library;
-        this.algorithm = algorithm;
-        this.transformer = transformer;
-        this.dataset = dataset;
-        this.type = type;
-        this.miningAttributes = miningAttributes;
-    }
-
-    public ClusterPipeline(String href, String name, String library, Algorithm algorithm, String transformer, String dataset, ArrayList<String> preprocessors){
-        this.name = name;
-        this.href = href;
-        this.library = library;
-        this.algorithm = algorithm;
-        this.preprocessors = preprocessors;
         this.transformer = transformer;
         this.dataset = dataset;
     }

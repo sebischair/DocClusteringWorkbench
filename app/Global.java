@@ -1,46 +1,24 @@
-import controllers.MorphiaObject;
-import model.Classifier;
+import db.AmelieMongoClient;
+import db.DefaultMongoClient;
 import play.Application;
-import play.Configuration;
 import play.GlobalSettings;
 import play.Logger;
-import util.StaticFunctions;
 
 /**
  * Created by Manoj on 10/24/2016.
  */
 public class Global extends GlobalSettings {
 
-    public void onStart(Application app) {
-        super.beforeStart(app);
+    @Override
+    public void onStart(play.Application arg0) {
+        super.beforeStart(arg0);
         Logger.debug("** onStart **");
-        Configuration configuration = Configuration.root();
         try {
-            MorphiaObject.connect(
-                    configuration.getString("morphia.db.url"),
-                    configuration.getInt("morphia.db.port"),
-                    configuration.getString("morphia.db.name"),
-                    configuration.getString("morphia.db.username"),
-                    configuration.getString("morphia.db.pwd")
-            );
-            Logger.debug("** Morphia datastore: " + MorphiaObject.datastore.getDB());
+            DefaultMongoClient.connect();
+            AmelieMongoClient.connect();
+            Logger.debug("** Connected to datastore: " + DefaultMongoClient.datastore.getDB() + "and " + AmelieMongoClient.amelieDataStore.getDB());
         } catch (Exception e) {
-            Logger.error("** Morphia datastore: " + e.toString());
-        }
-
-        Logger.debug("** Morphia datastore: " + MorphiaObject.datastore.getDB());
-        Logger.info("Application has started");
-        initDatabase();
-    }
-
-    private void initDatabase() {
-        if(new Classifier().getAll().size() == 0) {
-            Classifier classifier = new Classifier();
-            classifier.setName(StaticFunctions.LIBSVM);
-            classifier.save();
-            classifier = new Classifier();
-            classifier.setName(StaticFunctions.NAIVEBAYES);
-            classifier.save();
+            Logger.error("** Cannot connect to mongo: " + e.toString());
         }
     }
 

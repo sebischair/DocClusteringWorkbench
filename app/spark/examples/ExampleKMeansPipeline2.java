@@ -7,23 +7,25 @@ import org.apache.spark.ml.clustering.KMeans;
 import org.apache.spark.ml.feature.HashingTF;
 import org.apache.spark.ml.feature.StopWordsRemover;
 import org.apache.spark.ml.feature.Tokenizer;
-import org.apache.spark.sql.*;
-import spark.clusterers.ISparkClusterPipeline;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.functions;
+import play.Logger;
 import spark.SparkSessionComponent;
 
 import java.io.File;
 
-public class ExampleKMeansPipeline2 implements ISparkClusterPipeline {
+public class ExampleKMeansPipeline2 {
 
     private SparkSessionComponent sparkSessionComponent;
 
     public Dataset<Row> trainPipeline() {
-
-        System.out.println("\n...........................Example PipeLine 2: Tokenizer, Remove StopWords, Hashing TF, KMeans...........................");
+        Logger.debug("\n...........................Example PipeLine 2: Tokenizer, Remove StopWords, Hashing TF, KMeans...........................");
 
         sparkSessionComponent = SparkSessionComponent.getSparkSessionComponent();
         SparkSession spark = sparkSessionComponent.getSparkSession();
-        System.out.print("\n");
+        Logger.debug("\n");
 
         // Load and parse data
         String path = new File("myresources/datasets/tasksNoHeader.csv").getAbsolutePath();
@@ -35,7 +37,6 @@ public class ExampleKMeansPipeline2 implements ISparkClusterPipeline {
         Dataset<Row>[] splitDataSet =  listData.randomSplit(weights);
         Dataset<Row> trainingData = splitDataSet[0];
         Dataset<Row> testingData = splitDataSet[1];
-
 
         Tokenizer tokenizer = new Tokenizer()
                 .setInputCol("document")
@@ -57,23 +58,18 @@ public class ExampleKMeansPipeline2 implements ISparkClusterPipeline {
                 .setPredictionCol("cluster_label")
                 .setMaxIter(20);
 
-
-
         Pipeline pipeline = new Pipeline()
                 .setStages(new PipelineStage[] {tokenizer, stopWordsRemover, hashingTF, kmeans});
-
 
         // Fit the pipeline to training documents.
         PipelineModel model = pipeline.fit(trainingData);
         Dataset<Row> results = model.transform(testingData);
 
-        System.out.println("\n.....................Results...........................");
+        Logger.debug("\n.....................Results...........................");
         results.show();
-
-        System.out.println("\n......Saving Results...........................");
+        Logger.debug("\n......Saving Results...........................");
         results.write().format("json").mode("overwrite").save("myresources/results/example-pipeline-2");
-
-        System.out.println("\n...........................Example Pipeline 2: The End...........................");
+        Logger.debug("\n...........................Example Pipeline 2: The End...........................");
 
         return results;
     }

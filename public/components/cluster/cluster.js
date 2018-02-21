@@ -1,6 +1,7 @@
 'use strict';
 
 var clusterPipelineApp = angular.module('cApp.cluster', ['ngRoute']);
+
 clusterPipelineApp.factory('ClusterPipelineDataService', ['$http', function PipelineDataService($http) {
     var getPipelineResults = function () {
         return $http.get('/clustering/results')
@@ -40,6 +41,7 @@ clusterPipelineApp.factory('ClusterPipelineDataService', ['$http', function Pipe
         getAllPipelines: getAllPipelines
     };
 }]);
+
 clusterPipelineApp.config(['$routeProvider', function ($routeProvider) {
     $routeProvider
         .when('/visualize', {
@@ -53,7 +55,7 @@ clusterPipelineApp.config(['$routeProvider', function ($routeProvider) {
             }
         })
         .when('/clusterDocuments', {
-            templateUrl: '/assets/components/classify/classify.html',
+            templateUrl: '/assets/components/cluster/clusterPipelines.html',
             controller: 'ClusterClassifyCtrl',
             controllerAs: 'vm',
             resolve: {
@@ -84,12 +86,10 @@ clusterPipelineApp.config(['$routeProvider', function ($routeProvider) {
         });
 }]);
 
-clusterPipelineApp.controller('VisualizePipelineCtrl', ['pipelines', '$http', '$location', function (pipelines, $http, $location) {
+clusterPipelineApp.controller('VisualizePipelineCtrl', ['pipelines', function (pipelines) {
     var self = this;
-    console.log(pipelines);
     self.pipelines = pipelines;
     self.onVisualize = function () {
-        console.log("called");
         $("#progress").css({
             "visibility": "visible"
         });
@@ -97,18 +97,18 @@ clusterPipelineApp.controller('VisualizePipelineCtrl', ['pipelines', '$http', '$
     }
 }]);
 
-clusterPipelineApp.controller('VisualizePipelineClustersCtrl', ['clusters', '$http', '$location', function (clusters, $http, $location) {
+clusterPipelineApp.controller('VisualizePipelineClustersCtrl', ['clusters', function (clusters) {
     var self = this;
     self.clusters = clusters.cluster_table;
     self.member_count = clusters.member_count;
 }]);
 
-classifyApp.controller('ClusterClassifyCtrl', ['pipelines', '$http', function (pipelines, $http) {
+clusterPipelineApp.controller('ClusterClassifyCtrl', ['pipelines', function (pipelines) {
     var self = this;
     self.pipelines = pipelines;
 }]);
 
-classifyApp.controller('ExecutePipelineCtrl', ['scAuth', 'scData', 'scModel', 'pipeline', '$http', '$q', function (scAuth, scData, scModel, pipeline, $http, $q) {
+clusterPipelineApp.controller('ExecutePipelineCtrl', ['scAuth', 'scData', 'scModel', 'pipeline', '$http', function (scAuth, scData, scModel, pipeline, $http) {
     var self = this;
     self.pipeline = pipeline;
     self.showResults = false;
@@ -116,27 +116,18 @@ classifyApp.controller('ExecutePipelineCtrl', ['scAuth', 'scData', 'scModel', 'p
     self.isPredicting = false;
 
     self.clusterDocument = function () {
-
         if (self.textToClassify === "") {
-            self.message = "Please provide the text to predict cluster label!"
+            self.message = "Please provide the text to classify!"
         } else {
-            $("#progress").css({
-                "visibility": "visible"
-            });
             self.isPredicting = true;
-            var data = {};
             self.showResults = false;
-            data.pipeline = self.pipeline;
-            data.textToClassify = ""+self.textToClassify;
+            var data = {};
+            data.pipelineName = self.pipeline.name;
+            data.textToClassify = self.textToClassify;
             $http.post('/clustering/pipeline/predict', data).then(function (response) {
-                self.documents = response.data.sort(function(a,b){
-                  return b.cosinesimilarity - a.cosinesimilarity;
-                });
+                self.documents = response.data.result;
                 self.showResults = true;
                 self.isPredicting = false;
-                $("#progress").css({
-                    "visibility": "hidden"
-                });
             });
         }
     };

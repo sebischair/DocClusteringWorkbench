@@ -1,10 +1,10 @@
 package controllers;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import model.PersistentEntity;
+import model.ClusterPipeline;
+import model.amelie.Issue;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import play.Logger;
@@ -15,54 +15,25 @@ import play.mvc.Http;
 import play.mvc.Result;
 import services.HelperService;
 import services.PipelineService;
-import spark.clusterers.BaseClusterPipeline;
-import spark.dataloaders.CSVDataLoader;
-import spark.examples.ExamplePredictPipeline1;
 import spark.pipelines.SparkPipelineFactory;
 import spark.pipelines.SparkPredictPipeline;
 import util.StaticFunctions;
 
 import javax.inject.Inject;
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static java.lang.Integer.parseInt;
 import static spark.utils.FileUtil.jsonToCSVConverter;
 import static spark.utils.FileUtil.saveDataAsCSV;
-import static spark.utils.SparkDatasetUtil.clusterTableToJson;
 import static spark.utils.SparkDatasetUtil.datasetToJson;
 import static spark.utils.SparkDatasetUtil.extractClusterTablefromDataset;
 
-
 public class ClusterController extends Controller {
-
     @Inject
     WSClient ws;
-
-    public static JsonNode getSortedClusterResults(Dataset<Row> dataset) {
-        Dataset<Row> sortedResults = dataset.sort("cluster_label");
-        return clusterTableToJson(sortedResults);
-    }
-
-    public Result runPipeline(String pipelineName) {
-        CSVDataLoader csvDataLoader = new CSVDataLoader();
-        BaseClusterPipeline baseClusterPipeline = new BaseClusterPipeline(csvDataLoader);
-        Dataset<Row> pipelineResults = baseClusterPipeline.trainPipeline("myresources/datasets/tasksNoHeader.csv", pipelineName);
-        JsonNode jsonResults = getSortedClusterResults(extractClusterTablefromDataset(pipelineResults));
-        return ok(jsonResults);
-    }
-
-    public Result getPipeline(String pipelineName){
-        PersistentEntity pipeline = PipelineService.getClusterPipeline(pipelineName);
-        return ok(Json.parse(StaticFunctions.deserializeToJSON(pipeline)));
-    }
-
-    public Result getTrainedPipelines() {
-        List<String> results = PipelineService.getAllTrainedModels();
-        return ok(Json.toJson(results));
-    }
 
     public Result getClusterResults() {
         List<String> results = PipelineService.getAllClustersResults();
@@ -72,33 +43,15 @@ public class ClusterController extends Controller {
     public Result getAllClustersFromPipeline(String pipelineName){
         Dataset<Row> results = PipelineService.getPipelineClusters(pipelineName);
         results = results.drop("features");
-        JsonNode jsonResults = getSortedClusterResults(extractClusterTablefromDataset(results));
+        JsonNode jsonResults = StaticFunctions.getSortedClusterResults(extractClusterTablefromDataset(results));
         return ok(Json.toJson(jsonResults));
     }
 
-    public Result getAllClusterPipelines(){
-        JsonNode pipelines_json = Json.toJson(Json.parse("{}"));
-        List<? extends PersistentEntity> pipelines = PipelineService.getAllClusterPipelines();
-        JsonNode deserializedPipelines = Json.parse(StaticFunctions.deserializeToJSON(pipelines));
-        return ok(((ObjectNode) pipelines_json).set("pipelines", deserializedPipelines));
-    }
-
-    public Result getLibraries() {
-        try {
-            FileInputStream conf = new FileInputStream("conf/libraries.json");
-            JsonNode libraries = Json.parse(conf);
-            return ok(libraries);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return ok(Json.parse("{results: null}"));
-        }
-    }
-    public Result datasetUpload(){
+    public Result datasetUpload() {
         Http.MultipartFormData<File> body = request().body().asMultipartFormData();
         Http.MultipartFormData.FilePart<File> dataset = body.getFile("file");
         if (dataset != null) {
             String fileName = dataset.getFilename();
-            String contentType = dataset.getContentType();
             File file = dataset.getFile();
             String newPath = "myresources/datasets/"+fileName;
             file.renameTo(new File(newPath));
@@ -108,12 +61,14 @@ public class ClusterController extends Controller {
         }
     }
 
-    public Result createClusterPipeline(){
+    public Result createClusterPipeline() {
         JsonNode data = request().body().asJson().get("pipeline");
-        String filepath = data.get("dataset").asText();
+        String filepath = data.has("dataset") ? data.get("dataset").asText("") : "temp";
+        String projectKey = data.get("mongoProjectKey").asText("");
         Logger.info(data.get("scLink").asText());
-        if(data.get("scLink").asBoolean()){
-            String filename = data.get("scData").get("filename").asText();
+
+        if(data.get("scLink").asBoolean()) {
+            String filename = data.get("dataset").asText();
             filepath = "myresources/datasets/"+filename;
             String scTypeURL = data.get("scData").get("type").get("href").asText();
             ArrayNode attributesToMine = (ArrayNode) data.get("scData").get("miningAttributes");
@@ -130,7 +85,21 @@ public class ClusterController extends Controller {
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
-            //return ok(Json.toJson(hs.getSCData(scTypeURL,miningAttributes)));
+        } else if(projectKey != "") {
+            Issue issueModel = new Issue();
+            //ArrayNode decisions = issueModel.findAllIssuesInAProject(projectKey);
+            ArrayNode decisions = issueModel.findAllDesignDecisionsInAProject(projectKey);
+            List<String> miningAttributes = new ArrayList<>();
+            miningAttributes.add("name");
+            miningAttributes.add("summary");
+            miningAttributes.add("description");
+            filepath = "myresources/datasets/" + data.get("name").asText("");
+            StringBuilder records = jsonToCSVConverter(decisions, miningAttributes);
+            try {
+                saveDataAsCSV(filepath, records);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
         }
         JsonNode results = Json.toJson(Json.parse("{}"));
 
@@ -155,28 +124,34 @@ public class ClusterController extends Controller {
     }
 
     public Result getSimilarDocuments(){
-        JsonNode pipeline = request().body().asJson().get("pipeline");
+        String pipelineName = request().body().asJson().get("pipelineName").asText();
         String textToCluster = request().body().asJson().get("textToClassify").asText();
-        String pipelineName = pipeline.get("name").asText();
-        JsonNode results = Json.toJson(Json.parse("{}"));
-        switch(pipeline.get("library").asInt()){
-            case 2:{
-                Logger.info("....Building in Progress.....");
-                //Do Nothing : In Progress
-                ((ObjectNode) results).set("results", Json.toJson("In Progress"));
+        if(!pipelineName.isEmpty() && !textToCluster.isEmpty()) {
+            ClusterPipeline pipeline = PipelineService.getClusterPipeline(pipelineName);
+            ObjectNode results = Json.newObject();
+            switch(pipeline.getLibrary()){
+                case "1":
+                    Logger.info(".....Prediction Library: Spark..................");
+                    SparkPredictPipeline predictPipeline = new SparkPredictPipeline(pipelineName);
+                    ArrayNode result = predictPipeline.predict(textToCluster);
+                    results.set("result", Json.toJson(result));
+                    break;
+                case "2":
+                    Logger.info("....Building in Progress.....");
+                    //Do Nothing : In Progress
+                    results.set("result", Json.toJson("In Progress"));
+                    break;
+                default:
+                    results.set("result", Json.toJson("Not Found"));
+                    Logger.info(".....Prediction Library: Not Found..................");
             }
-            break;
-            case 1:
-                Logger.info(".....Prediction Library: Spark..................");
-                SparkPredictPipeline predictPipeline = new SparkPredictPipeline(pipelineName);
-                ArrayNode result = predictPipeline.predict(textToCluster);
-                results = Json.toJson(result);
-                break;
-            default:
-                ((ObjectNode) results).set("results", Json.toJson("Not Found"));
-                Logger.info(".....Prediction Library: Not Found..................");
+            return ok(results);
+        } else {
+            ObjectNode result = Json.newObject();
+            result.put("status", "KO");
+            result.put("result", "{Missing pipeline name}");
+            return ok(result);
         }
-        return ok(results);
     }
 
 }

@@ -2,7 +2,7 @@ package spark.ranking;
 
 import org.apache.spark.ml.linalg.Vector;
 
-public class CosineSimilarity implements IRankingStrategy{
+public class CosineSimilarity {
 
     public Double getSimilarity(Vector v1, Vector v2){
         if(v1.size() == v2.size()){

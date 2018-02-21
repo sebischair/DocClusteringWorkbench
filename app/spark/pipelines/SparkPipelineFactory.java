@@ -10,11 +10,14 @@ import org.apache.spark.ml.clustering.KMeans;
 import org.apache.spark.ml.feature.*;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SaveMode;
 import spark.dataloaders.DataLoaderFactory;
-import spark.dataloaders.ISparkDataLoader;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 
 import static java.lang.Integer.parseInt;
 import static services.PipelineService.saveClusterPipelineSettings;
@@ -22,14 +25,12 @@ import static spark.preprocessing.SparkCommonPreprocessor.commonPreprocess;
 import static spark.utils.SparkStringColumnUtil.addIDColumn;
 
 public class SparkPipelineFactory {
-
-
     private String pipelineName;
     private JsonNode settings;
     private DataLoaderFactory dataLoaderFactory;
-    //private Tokenizer tokenizer;
     private RegexTokenizer tokenizer;
     private StopWordsRemover stopWordsRemover;
+    private StopWordsRemover customStopWordsRemover;
     private Word2Vec word2Vec;
     private HashingTF hashingTF;
     private KMeans kMeans;
@@ -39,20 +40,18 @@ public class SparkPipelineFactory {
     private PipelineModel pipelineModel;
     private NGram nGrams;
     private Dataset<Row> dataSet;
-
+    private String[] stringArray;
 
     public void setPipelineName(String pipelineName) {
         this.pipelineName = pipelineName.replaceAll("\"", "");
     }
 
     private void loadData(String type, String path) {
-        System.out.println(path);
-        ISparkDataLoader dataLoader = dataLoaderFactory.getDataLoader(type);
-        dataSet = dataLoader.loadData(path);
-
+        dataSet = dataLoaderFactory.getDataLoader(type).loadData(path);
     }
 
     public SparkPipelineFactory(JsonNode settings) {
+        initStopWords();
         dataLoaderFactory = new DataLoaderFactory();
         this.settings = settings;
         initPipelineStages();
@@ -60,23 +59,40 @@ public class SparkPipelineFactory {
         pipeline = new Pipeline().setStages(pipelineStages);
     }
 
+    private void initStopWords() {
+        try {
+            Path filePath = new File("myresources/stopwords.txt").toPath();
+            Charset charset = Charset.defaultCharset();
+            List<String> stringList = Files.readAllLines(filePath, charset);
+            stringArray = stringList.toArray(new String[]{});
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void initPipelineStages() {
-        /*tokenizer = new Tokenizer()
-                .setInputCol("document")
-                .setOutputCol("words");*/
         tokenizer = new RegexTokenizer()
                 .setInputCol("document")
                 .setOutputCol("words")
-                .setPattern("\\W");
+                .setPattern("\\W")
+                .setMinTokenLength(3)
+                .setToLowercase(true);
+
+        customStopWordsRemover = new StopWordsRemover()
+                .setInputCol(tokenizer.getOutputCol())
+                .setOutputCol("customwordsfiltered")
+                .setCaseSensitive(false)
+                .setStopWords(stringArray);
 
         stopWordsRemover = new StopWordsRemover()
-                .setInputCol(tokenizer.getOutputCol())
-                .setOutputCol("filtered");
+                .setInputCol(customStopWordsRemover.getOutputCol())
+                .setOutputCol("filtered")
+                .setCaseSensitive(false);
 
         word2Vec = new Word2Vec()
                 .setInputCol(stopWordsRemover.getOutputCol())
                 .setOutputCol("features")
-                .setVectorSize(100)
+                .setVectorSize(1000)
                 .setMinCount(0);
 
         hashingTF = new HashingTF()
@@ -104,7 +120,6 @@ public class SparkPipelineFactory {
 
     private void setPipelineStages(JsonNode settings) {
         JsonNode algorithm = settings.get("algorithm");
-        System.out.println(algorithm.get("id").asText());
         switch (settings.get("algorithm").get("id").asText()) {
             case "spark-kmeans":
                 System.out.println(".....Spark KMeans.......");
@@ -116,6 +131,7 @@ public class SparkPipelineFactory {
                         System.out.println(".....Spark Word2Vec.......");
                         pipelineStages = new PipelineStage[]{
                                 tokenizer,
+                                customStopWordsRemover,
                                 stopWordsRemover,
                                 word2Vec,
                                 kMeans
@@ -126,6 +142,7 @@ public class SparkPipelineFactory {
                         System.out.println(".....Spark HashingTF.......");
                         pipelineStages = new PipelineStage[]{
                                 tokenizer,
+                                customStopWordsRemover,
                                 stopWordsRemover,
                                 hashingTF,
                                 kMeans
@@ -140,6 +157,7 @@ public class SparkPipelineFactory {
                         System.out.println(".....Spark HashingTF.......");
                         pipelineStages = new PipelineStage[]{
                                 tokenizer,
+                                customStopWordsRemover,
                                 stopWordsRemover,
                                 hashingTF,
                                 bisectingKMeans
@@ -150,6 +168,7 @@ public class SparkPipelineFactory {
                         System.out.println(".....Spark Word2Vec.......");
                         pipelineStages = new PipelineStage[]{
                                 tokenizer,
+                                customStopWordsRemover,
                                 stopWordsRemover,
                                 word2Vec,
                                 bisectingKMeans
@@ -162,6 +181,7 @@ public class SparkPipelineFactory {
                 System.out.println(".....Spark Default: KMeans-Word2Vec.......");
                 pipelineStages = new PipelineStage[]{
                         tokenizer,
+                        customStopWordsRemover,
                         stopWordsRemover,
                         word2Vec,
                         kMeans
@@ -177,7 +197,6 @@ public class SparkPipelineFactory {
 
     private void savePipelineModel() {
         String path = "myresources/models/" + pipelineName;
-        System.out.print(path);
         try {
             pipelineModel.write().overwrite().save(path);
         } catch (IOException e) {
@@ -214,5 +233,4 @@ public class SparkPipelineFactory {
                 kMeans.setMaxIter(parseInt(value));
         }
     }
-
 }
