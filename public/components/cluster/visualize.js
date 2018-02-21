@@ -32,7 +32,7 @@ function draw() {
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    d3.json("http://localhost:9001/pipeline/clusters/"+pipelineName, function (error, clusters) {
+    d3.json("/pipeline/clusters/"+pipelineName, function (error, clusters) {
         if (error) throw error;
         root = clusters;
         root.x0 = height / 2;

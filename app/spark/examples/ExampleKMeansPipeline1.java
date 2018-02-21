@@ -3,18 +3,20 @@ package spark.examples;
 import org.apache.spark.ml.Pipeline;
 import org.apache.spark.ml.PipelineModel;
 import org.apache.spark.ml.PipelineStage;
-import org.apache.spark.ml.feature.Tokenizer;
-import org.apache.spark.ml.feature.*;
 import org.apache.spark.ml.clustering.KMeans;
-import org.apache.spark.sql.*;
-import spark.clusterers.ISparkClusterPipeline;
+import org.apache.spark.ml.feature.StopWordsRemover;
+import org.apache.spark.ml.feature.Tokenizer;
+import org.apache.spark.ml.feature.Word2Vec;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.functions;
+import play.Logger;
 import spark.SparkSessionComponent;
 
 import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
-
-import static util.StaticFunctions.deserializeToJSON;
 
 /*
 * This is an Example ML KMeans Pipeline with Preprocessors: Tokenizer, Remove Stop Words, Word2Vec.
@@ -24,20 +26,16 @@ import static util.StaticFunctions.deserializeToJSON;
 *
 * */
 @Singleton
-public class ExampleKMeansPipeline1 implements ISparkClusterPipeline{
+public class ExampleKMeansPipeline1 {
 
     private SparkSessionComponent sparkSessionComponent;
 
-
     public Dataset<Row> trainPipeline() {
-
-        System.out.println("\n...........................Example Predict 1: Tokenizer, Remove StopWords, Word2Vec, KMeans...........................");
-
+        Logger.debug("\n...........................Example Predict 1: Tokenizer, Remove StopWords, Word2Vec, KMeans...........................");
         sparkSessionComponent = SparkSessionComponent.getSparkSessionComponent();
 
         SparkSession spark = sparkSessionComponent.getSparkSession();
-        System.out.print("\n");
-
+        Logger.debug("\n");
 
         // Load and parse data
         String path = new File("myresources/datasets/tasksNoHeader.csv").getAbsolutePath();
@@ -48,12 +46,6 @@ public class ExampleKMeansPipeline1 implements ISparkClusterPipeline{
 
         //Concat the String columns
         inputData = inputData.withColumn("document", functions.concat_ws(" ", inputData.col("_c0"), inputData.col("_c1")));
-
-        //Split into training & testing datasets
-        double[] weights = {0.5, 0.5};
-        Dataset<Row>[] splitDataSet = inputData.randomSplit(weights);
-        Dataset<Row> trainingData = splitDataSet[0];
-        Dataset<Row> testingData = splitDataSet[1];
 
         //Setup tokenizer
         Tokenizer tokenizer = new Tokenizer()
@@ -82,24 +74,20 @@ public class ExampleKMeansPipeline1 implements ISparkClusterPipeline{
                 .setStages(new PipelineStage[]{tokenizer, stopWordsRemover, word2Vec, kmeans});
 
         // Fit the pipeline to training documents.
-        PipelineModel model = pipeline.fit(trainingData);
+        PipelineModel model = pipeline.fit(inputData);
         try {
             model.write().overwrite().save("myresources/models/kmeans-example-1-model");
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        Dataset<Row> results = model.transform(trainingData);
+        Dataset<Row> results = model.transform(inputData);
 
-        System.out.println("\n......Saving Results...........................");
-
+        Logger.debug("\n......Saving Results...........................");
         results.write().mode("overwrite").format("json").save("myresources/results/example-pipeline-1");
+        Logger.debug("\n...........................Example PipeLine 1: The End...........................");
 
-        System.out.println("\n...........................Example PipeLine 1: The End...........................");
         Dataset<Row> sortedResults = results.sort(results.col("cluster_label"));
-
         return sortedResults;
-
     }
-
 }
