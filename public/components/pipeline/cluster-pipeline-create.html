@@ -70,14 +70,30 @@
                         aria-expanded="false" aria-controls="selectWorkspace">
                     Link SocioCortex workspace
                 </button>
+
+                <button type="button" class="btn btn-primary" ng-click="vm1.linkMongo()"
+                        aria-expanded="false" aria-controls="selectProject">
+                    Link to MongoDB
+                </button>
             </div>
+            <div class="col s12" ng-if="vm1.mongo">
+                <div class="row">
+                    <form class="col s12">
+                        <div class="row">
+                            <input type="text" ng-model="vm1.mongoProjectKey" id="mongoProjectKey" ng-minlength=2 required/>
+                            <label for="mongoProjectKey">Project Key</label>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <br><br>
             <div class="col s12" ng-if="vm1.workspaces">
                 <div class="row">
                     <form class="col s12">
                         <div class="row">
                             <input type="text" ng-model="vm1.scFileName" id="scFileName" ng-minlength=3 required/>
-                            <label for="scFileName">Filename (with extension):</label>
+                            <label for="scFileName">Filename (with extension)</label>
                         </div>
                     </form>
                 </div>

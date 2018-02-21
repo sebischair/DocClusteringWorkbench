@@ -9,8 +9,6 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.functions;
 import play.libs.Json;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class SparkDatasetUtil {
@@ -20,13 +18,6 @@ public class SparkDatasetUtil {
         List<String> datasetJson = dataset.toJSON().collectAsList();
         datasetJson.forEach((row) -> array.add(Json.toJson(Json.parse(row))));
         return Json.toJson(array);
-    }
-
-    public static ArrayNode datasetToJsonArray(Dataset<Row> dataset) {
-        ArrayNode array = new ArrayNode(new JsonNodeFactory(true));
-        List<String> datasetJson = dataset.toJSON().collectAsList();
-        datasetJson.forEach((row) -> array.add(Json.toJson(Json.parse(row))));
-        return array;
     }
 
     public static JsonNode clusterTableToJson(Dataset<Row> dataSet) {
@@ -53,7 +44,6 @@ public class SparkDatasetUtil {
         return Json.toJson(on);
     }
 
-
     /*
     * Input Dataset should already contain a column with cluster labels named "cluster_label"
     */
@@ -74,7 +64,6 @@ public class SparkDatasetUtil {
         Dataset<Row> clusterResults = resultsWithId
                 .groupBy("result_cluster_label")
                 .agg(functions.collect_list("json").alias("members"));
-
 
         Dataset<Row> cluster_count_table = dataset.groupBy(dataset.col("cluster_label")).count().sort(dataset.col("cluster_label"));
 

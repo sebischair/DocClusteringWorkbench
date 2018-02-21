@@ -7,7 +7,6 @@ import javax.inject.Singleton;
 
 @Singleton
 public class SparkSessionComponent {
-
     private static SparkSessionComponent sparkSessionComponent;
     private final SparkSession sparkSession;
     private final SQLContext sqlContext;
@@ -29,13 +28,5 @@ public class SparkSessionComponent {
 
     public SparkSession getSparkSession() {
         return sparkSession;
-    }
-
-    public void stopSparkSession(){
-        sparkSession.stop();
-    }
-
-    public SQLContext getSqlContext() {
-        return sqlContext;
     }
 }

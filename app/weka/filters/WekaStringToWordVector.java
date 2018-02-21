@@ -15,30 +15,6 @@ public class WekaStringToWordVector {
     private int minTermFrequency = 1;
     private int wordsToKeep = 1000;
 
-    public void setTf(boolean tf) {
-        this.tf = tf;
-    }
-
-    public void setIdf(boolean idf) {
-        this.idf = idf;
-    }
-
-    public void setPeriodicPruning(double periodicPruning) {
-        this.periodicPruning = periodicPruning;
-    }
-
-    public void setAttributeIndex(String attributeIndex) {
-        this.attributeIndex = attributeIndex;
-    }
-
-    public void setMinTermFrequency(int minTermFrequency) {
-        this.minTermFrequency = minTermFrequency;
-    }
-
-    public void setWordsToKeep(int wordsToKeep) {
-        this.wordsToKeep = wordsToKeep;
-    }
-
     public WekaStringToWordVector() {
         stw = new StringToWordVector();
         init();

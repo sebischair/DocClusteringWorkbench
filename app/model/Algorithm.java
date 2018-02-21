@@ -36,6 +36,4 @@ public class Algorithm {
         this.options = options;
     }
 
-
-
 }
