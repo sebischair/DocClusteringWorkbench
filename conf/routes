@@ -6,26 +6,12 @@
 
 GET         /                                   controllers.HomeController.index
 
-GET         /pipeline/train                     controllers.PipelineController.train(name: String ?= "")
-POST        /pipeline/predict                   controllers.PipelineController.predict
-POST        /pipeline/predictAndClassify        controllers.PipelineController.predictAndClassify
-POST        /pipeline/classifier                controllers.PipelineController.setClassifier
-
-GET         /pipeline/create                    controllers.PipelineController.create(name: String ?= "")
-GET         /pipeline/remove                    controllers.PipelineController.remove(name: String ?= "")
-GET         /pipeline/getAll                    controllers.PipelineController.getAll
-GET         /pipeline/get                       controllers.PipelineController.get(name: String ?= "")
-GET         /classifiers                        controllers.PipelineController.getClassifiers
-
-POST        /label/create                       controllers.LabelController.create
-POST        /label/remove                       controllers.LabelController.remove
-
+GET         /clustering/libraries               controllers.ClusteringPipelineController.getLibraries
+GET         /clustering/pipelines               controllers.ClusteringPipelineController.getTrainedPipelines
+GET         /clustering/pipelines/getAll        controllers.ClusteringPipelineController.getAllClusterPipelines
+GET         /clustering/pipeline/:pipelineName  controllers.ClusteringPipelineController.getPipeline(pipelineName: String)
 
 #Cluster Pipeline Configuration API
-GET         /clustering/libraries               controllers.ClusterController.getLibraries
-GET         /clustering/pipelines               controllers.ClusterController.getTrainedPipelines
-GET         /clustering/pipelines/getAll        controllers.ClusterController.getAllClusterPipelines
-GET         /clustering/pipeline/:pipelineName  controllers.ClusterController.getPipeline(pipelineName: String)
 GET         /clustering/results                 controllers.ClusterController.getClusterResults
 GET         /pipeline/clusters/:pipelineName    controllers.ClusterController.getAllClustersFromPipeline(pipelineName: String)
 POST        /clustering/pipeline/create         controllers.ClusterController.createClusterPipeline

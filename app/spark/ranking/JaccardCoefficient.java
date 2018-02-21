@@ -8,7 +8,7 @@ import java.util.Set;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
-public class JaccardCoefficient{
+public class JaccardCoefficient {
 
     public Float jaccardSimilarity(Set<String> s1, Set<String> s2){
         Set<String> union = new HashSet<>(s1);
@@ -35,5 +35,4 @@ public class JaccardCoefficient{
         }
         return 0.0;
     }
-
 }

@@ -3,13 +3,16 @@ package spark.pipelines;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import interfaces.IPredictPipeline;
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.mapred.FileAlreadyExistsException;
 import org.apache.spark.ml.PipelineModel;
-import org.apache.spark.ml.feature.*;
+import org.apache.spark.ml.feature.Word2Vec;
+import org.apache.spark.ml.feature.Word2VecModel;
 import org.apache.spark.ml.linalg.Vector;
-import org.apache.spark.sql.*;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.RowFactory;
+import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.Metadata;
 import org.apache.spark.sql.types.StructField;
@@ -26,10 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-import static java.lang.Integer.parseInt;
-
-public class SparkPredictPipeline implements IPredictPipeline {
-
+public class SparkPredictPipeline {
     private PipelineModel predictModel;
     private String pipelineName;
     private Integer predictedLabel;
@@ -43,7 +43,6 @@ public class SparkPredictPipeline implements IPredictPipeline {
     private JaccardCoefficient jaccardCoefficient;
     private Map<Long, Double> cosineSimilarityMap;
     private Map<Long, Float> jaccardSimilarityMap;
-
 
     public SparkPredictPipeline(String pipelineName) {
         cosineSimilarity = new CosineSimilarity();
@@ -152,5 +151,4 @@ public class SparkPredictPipeline implements IPredictPipeline {
             }
         }
     }
-
 }

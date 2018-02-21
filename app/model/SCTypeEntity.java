@@ -20,8 +20,6 @@ public class SCTypeEntity {
         this.name = name;
     }
 
-
-
     public String getId() {
         return id;
     }
@@ -38,6 +36,5 @@ public class SCTypeEntity {
     public void setHref(String href) {
         this.href = href;
     }
-
 
 }

@@ -4,43 +4,17 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 import db.DefaultMongoClient;
-import model.Label;
-import model.Pipeline;
-import play.mvc.Result;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 
 import java.util.*;
+
+import static spark.utils.SparkDatasetUtil.clusterTableToJson;
 
 /**
  * Created by Manoj on 10/24/2016.
  */
 public class StaticFunctions {
-    public static String LIBSVM = "LibSVM";
-    public static String NAIVEBAYES = "NaiveBayes";
-    public static String LABEL = "label";
-    public static String TEXT = "text";
-    public static String FEATURES = "features";
-    public static String WORDS = "words";
-    public static String[] STOPWORDS = {"a", "an", "and", "the", "that", "they", "which", "we", "us", "i", "me", "like", "that", "only", "much", "kafka", "it", "is", "if", "by", "basically", "are", "as", "but", "those", "spark", "also"};
-    public static final Set<String> STOPWORDS_SET = new HashSet<String>(Arrays.asList(STOPWORDS));
-
-    public static boolean tagValuesMatch(JsonNode entityAttributes, String tag, Label label) {
-        if (entityAttributes == null) return false;
-        for (int j = 0; j < entityAttributes.size(); j++) {
-            JsonNode entityAttribute = entityAttributes.get(j);
-            if (entityAttribute.get("name").asText("").equals(tag)) {
-                JsonNode jsonValue = entityAttribute.get("values");
-                if (jsonValue.size() > 0) {
-                    if (label.getType().equals("Boolean")) {
-                        Boolean value = jsonValue.get(0).asBoolean(false);
-                        return (value && label.getName().equals("1")) || (!value && label.getName().equals("0"));
-                    } else {
-                        return jsonValue.get(0).get("name").asText("").equalsIgnoreCase(label.getName());
-                    }
-                }
-            }
-        }
-        return false;
-    }
 
     public static String getStringValueFromSCObject(JsonNode entityAttributes, String attributeName) {
         if (entityAttributes != null)
@@ -78,27 +52,16 @@ public class StaticFunctions {
         return JSON.serialize(dbObj);
     }
 
-    public static Pipeline getPipeline(String pipelineName) {
-        return (Pipeline) new Pipeline().findByName("name", pipelineName);
-    }
-
-    public static Result jsonResult(Result httpResponse) {
-        return httpResponse.as("application/json; charset=utf-8");
-    }
-
-    public static String removeStopWords(String text) {
-        text = text.toLowerCase();
-        for (String s : STOPWORDS) {
-            text = text.replaceAll("\\b" + s + "\\b", "");
-        }
-        return text.replaceAll("[()]", "method");
-    }
-
     //Method for sorting the TreeMap based on values
     public static <K, V extends Comparable<V>> TreeMap<K, V> sortByValues(final Map<K, V> map) {
         TreeMap<K, V> sortedByValues = new TreeMap<K, V>(Collections.reverseOrder());
                 //new TreeMap<K, V>(valueComparator);
         sortedByValues.putAll(map);
         return sortedByValues;
+    }
+
+    public static JsonNode getSortedClusterResults(Dataset<Row> dataset) {
+        Dataset<Row> sortedResults = dataset.sort("cluster_label");
+        return clusterTableToJson(sortedResults);
     }
 }

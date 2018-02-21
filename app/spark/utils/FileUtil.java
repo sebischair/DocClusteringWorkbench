@@ -1,10 +1,8 @@
 package spark.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import play.Logger;
-import util.HtmlUtil;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -18,42 +16,15 @@ import java.util.Map;
 public class FileUtil {
     public static List<String> getFilesList(String path) {
         File folder = new File(path);
-        FilenameFilter filter = new FilenameFilter() {
-            @Override
-            public boolean accept(File current, String name) {
-                return new File(current, name).isDirectory();
-            }
-        };
+        FilenameFilter filter = (current, name) -> new File(current, name).isDirectory();
         List<String> filenames = new ArrayList<>();
         File[] files = folder.listFiles(filter);
-
-        if (null != files) {
-            for (File file : files) {
+        if(null != files) {
+            for(File file : files) {
                 filenames.add(file.getName());
             }
         }
         return filenames;
-    }
-
-    public static String constructCSVLineRecord(List<String> columnValues, String separator) {
-        StringBuilder sb = new StringBuilder();
-        for (String column : columnValues) {
-            sb.append(column);
-            if (columnValues.indexOf(column) == columnValues.size() - 1) {
-                sb.append("\n");
-            } else {
-                sb.append(separator);
-            }
-        }
-        return sb.toString();
-    }
-
-    public static String constructCSVRecords(List<String> rowValues) {
-        StringBuilder sb = new StringBuilder();
-        for (String row : rowValues) {
-            sb.append(row);
-        }
-        return sb.toString();
     }
 
     public static StringBuilder jsonToCSVConverter(ArrayNode jsonData, List<String> attributes) {
@@ -82,7 +53,7 @@ public class FileUtil {
                 String attributeValue = attribute.getValue().asText("");
                 if(!attributeValue.equals("")) {
                     attributeValue = attributeValue.replaceAll(",", "");
-                    attributeValue = HtmlUtil.convertToPlaintext(attributeValue);
+                    attributeValue = attributeValue;
                     sb.append(attributeValue);
                 }
                 sb.append(",");
