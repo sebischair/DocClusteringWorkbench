@@ -1,15 +1,16 @@
 version: '3'
 services:
-  app:
+  docclustering:
     tty: true
     build: ./
     ports:
-      - "9000:9000"
-      - "9999:9999"
-      - "8888:8888"
-      - "9090:9090"
-    volumes:
-    - ".:/home/play/Code"
+      - "3006:3006"
+    depends_on:
+      - mongoforamelie
+    links:
+      - mongo:mongo
+  mongoforamelie:
+    image: 'sebischair/amelie:mongoforamelie'
     depends_on:
       - mongo
     links:
@@ -17,4 +18,4 @@ services:
   mongo:
     image: 'mongo:3.6.2'
     ports:
-        - 27017:27017
+      - 27017:27017
