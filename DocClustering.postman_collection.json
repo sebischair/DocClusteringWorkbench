@@ -1,0 +1,106 @@
+{
+	"variables": [],
+	"info": {
+		"name": "DocClustering",
+		"_postman_id": "a59977d9-533a-f23e-36ba-253b0c981de2",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get similar documents from trained pipeline clusters",
+			"request": {
+				"url": "http://localhost:9000/clustering/pipeline/predict",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"pipelineName\": \"test\",\n\t\"textToClassify\": \"Import Signals Data into TDB\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Get clustering libraries",
+			"request": {
+				"url": "http://localhost:9000/clustering/libraries ",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Get clustering results for a pipeline",
+			"request": {
+				"url": "http://localhost:9000/pipeline/clusters/Spark",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Get all trained pipelines",
+			"request": {
+				"url": "http://localhost:9000/clustering/pipelines",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Get details about all trained pipelines",
+			"request": {
+				"url": "http://localhost:9000/clustering/pipelines/getAll",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Get info about a trained pipeline",
+			"request": {
+				"url": "http://localhost:9000/clustering/pipeline/spark",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": "pass pipeline name as a parameter"
+			},
+			"response": []
+		},
+		{
+			"name": "Create a new pipeline",
+			"request": {
+				"url": "http://localhost:9000/clustering/pipeline/create",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"pipeline\": {\n\t\t\"name\": \"test\",\n\t\t\"href\": \"/spark/train/pipeline/test\",\n\t\t\"mongoProjectKey\": \"SPARK\",\n\t\t\"scLink\": false,\n\t\t\"dataset\": \"test\",\n\t\t\"library\": {\n\t\t\t\"id\": 1\n\t\t},\n\t\t\"transformer\": {\n\t\t\t\"id\": \"spark-word2vec\"\n\t\t},\n\t\t\"algorithm\": {\n\t\t\t\"id\": \"spark-kmeans\",\n\t\t\t\"name\": \"spark-kmeans\",\n\t\t\t\"options\": [{\n\t\t\t\t\"name\": \"K-value\",\n\t\t\t\t\"value\": 30\n\t\t\t}, {\n\t\t\t\t\"name\": \"iterations\",\n\t\t\t\t\"value\": 10\n\t\t\t}]\n\t\t}\n\t}\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}

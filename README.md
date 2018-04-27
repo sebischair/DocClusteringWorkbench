@@ -1,6 +1,11 @@
 # Workbench for Learning Similar Architectural Design Decisions(Service only)
 Service for learning and retrieving similar Architectural Design Decisions
 
+APIs for training and testing cluster models
+
+<a href="https://documenter.getpostman.com/view/693941/collection/RW1aL1Dz" target="_blank">Documentation</a>
+
+[![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/97c1ddbf0f1449724e91)
 
 ## Runtime dependencies:
 JDK - `1.8.0`

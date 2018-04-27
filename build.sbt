@@ -1,8 +1,8 @@
-name := """Workbench4LSDD-Service"""
+name := """DocClustering"""
 
-version := "1.0-SNAPSHOT"
+version := "1.0"
 
-lazy val root = (project in file(".")).enablePlugins(PlayJava)
+lazy val root = (project in file(".")).enablePlugins(PlayJava, LauncherJarPlugin)
 
 scalaVersion := "2.11.11"
 
@@ -13,7 +13,6 @@ classpathTypes += "maven-plugin"
 
 libraryDependencies ++= Seq(
   filters,
-  javaJdbc,
   cache,
   javaWs,
   "org.webjars" %% "webjars-play" % "2.5.0",
@@ -47,4 +46,3 @@ dependencyOverrides ++= Set(
 unmanagedResourceDirectories in (Compile, runMain) <+=  baseDirectory ( _ /"../myresources")
 
 routesGenerator := InjectedRoutesGenerator
-

@@ -65,7 +65,6 @@ public class ClusterController extends Controller {
         JsonNode data = request().body().asJson().get("pipeline");
         String filepath = data.has("dataset") ? data.get("dataset").asText("") : "temp";
         String projectKey = data.get("mongoProjectKey").asText("");
-        Logger.info(data.get("scLink").asText());
 
         if(data.get("scLink").asBoolean()) {
             String filename = data.get("dataset").asText();

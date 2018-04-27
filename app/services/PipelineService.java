@@ -48,12 +48,12 @@ public class PipelineService {
         }
 
         ClusterPipeline clusterPipeline = new ClusterPipeline(
-                settings.get("href").asText(),
-                settings.get("name").asText(),
-                settings.get("library").get("id").asText(),
+                settings.get("href").asText(""),
+                settings.get("name").asText(""),
+                settings.get("library").get("id").asText(""),
                 algorithm,
-                settings.get("transformer").get("id").asText(),
-                settings.get("dataset").asText()
+                settings.get("transformer").get("id").asText(""),
+                settings.get("dataset").asText("")
                 );
         if(settings.get("scLink").asBoolean()){
             JsonNode scData = settings.get("scData");
