@@ -1,1 +1,0 @@
-{"class":"org.apache.spark.ml.clustering.BisectingKMeansModel","timestamp":1524842777705,"sparkVersion":"2.2.0","uid":"bisecting-kmeans_abf39b93a710","paramMap":{"maxIter":20,"predictionCol":"cluster_label","minDivisibleClusterSize":1.0,"featuresCol":"features","seed":566573821,"k":20}}

@@ -11,5 +11,4 @@ yajsw
 public/results/
 out/production/Workbench4LSDD-Service/
 conf/application.local.conf
-myresources/results
-myresources/datasets
+myresources/
