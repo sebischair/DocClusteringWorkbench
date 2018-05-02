@@ -12,3 +12,4 @@ public/results/
 out/production/Workbench4LSDD-Service/
 conf/application.local.conf
 myresources/
+dist/docclustering-1.0.zip
