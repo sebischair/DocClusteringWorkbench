@@ -16,9 +16,9 @@ COPY dist/docclustering-1.0.zip ${PROJECT_HOME}/docclustering-1.0.zip
 
 RUN cd ${PROJECT_HOME} && \
     unzip docclustering-1.0.zip && \
-    chmod +x ${PROJECT_HOME}/docclustering-1.0.zip/bin/docclustering
+    chmod +x ${PROJECT_HOME}/docclustering-1.0/bin/docclustering
 
-CMD ["/usr/src/docclustering-1.0.zip/bin/docclustering", "-Dhttp.port=3006"]
+CMD ["/usr/src/docclustering-1.0/bin/docclustering", "-Dhttp.port=3006"]
 
 # Expose port 3006
 EXPOSE 3006
