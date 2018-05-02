@@ -35,8 +35,6 @@ From the command prompt execute
 1. Change the database configurations according to the instructions in `application.conf`
 1. Start the complete application stack using `docker-compose up`
 
-Notice: the current docker uses a mongoDB image without any data. This will be dealt with in the future work.
-
 #### Example Training Pipelines
 ##### Spark KMeans
 >Word2Vec: `localhost:9000/spark/kmeans/example1`
