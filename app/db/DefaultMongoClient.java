@@ -7,32 +7,29 @@ import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 import play.Configuration;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DefaultMongoClient {
     static public Morphia morphia;
     static public Datastore datastore;
 
     static public void connect() throws Exception{
-        String dockerHost = "mongo";    // For docker, don't provide credentials to database
         Configuration configuration = Configuration.root();
         String dbUrl = configuration.getString("morphia.db.url");
-        String dbName = configuration.getString("morphia.db.name");
         int dbPort = configuration.getInt("morphia.db.port");
-        boolean isAuthEnabled = configuration.getBoolean("morphia.db.isAuthEnabled");
+        String userName = configuration.getString("morphia.db.username");
+        String password = configuration.getString("morphia.db.pwd");
+        String dbName = configuration.getString("morphia.db.name");
 
         ServerAddress sa = new ServerAddress(dbUrl, dbPort);
+        List<MongoCredential> cl = new ArrayList<MongoCredential>();
+        MongoCredential mc = MongoCredential.createCredential(userName, dbName, password.toCharArray());
+        cl.add(mc);
 
         morphia = new Morphia();
         morphia.mapPackage("app.model");
-        if (dbUrl.equals(dockerHost) || !isAuthEnabled) {
-            datastore = morphia.createDatastore(new MongoClient(sa), dbName);
-        } else {
-            String userName = configuration.getString("morphia.db.username");
-            String password = configuration.getString("morphia.db.pwd");
-            MongoCredential credential = MongoCredential.createCredential(userName, dbName, password.toCharArray());
-            datastore = morphia.createDatastore(new MongoClient(sa, Arrays.asList(credential)), dbName);
-        }
+        datastore = morphia.createDatastore(new MongoClient(sa, cl), dbName);
         datastore.ensureIndexes();
         datastore.ensureCaps();
     }

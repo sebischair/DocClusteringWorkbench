@@ -7,6 +7,7 @@ import db.DefaultMongoClient;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static spark.utils.SparkDatasetUtil.clusterTableToJson;
@@ -15,6 +16,8 @@ import static spark.utils.SparkDatasetUtil.clusterTableToJson;
  * Created by Manoj on 10/24/2016.
  */
 public class StaticFunctions {
+
+    public static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
     public static String getStringValueFromSCObject(JsonNode entityAttributes, String attributeName) {
         if (entityAttributes != null)
@@ -63,5 +66,12 @@ public class StaticFunctions {
     public static JsonNode getSortedClusterResults(Dataset<Row> dataset) {
         Dataset<Row> sortedResults = dataset.sort("cluster_label");
         return clusterTableToJson(sortedResults);
+    }
+
+    public static String truncate(String text){
+        if (text.length() > 50)
+            return text.substring(0, 50) + " ...";
+        else
+            return text;
     }
 }

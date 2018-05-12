@@ -120,11 +120,9 @@ public class SparkPredictPipeline {
                 Float cosineSimilarity = doc_similarity.floatValue() * 100;
                 Float jaccardsimilarity = (jaccardSimilarityMap.get(doc_id)) * 100;
 
-                if (cosineSimilarity >= 40 || jaccardsimilarity >= 8) {
-                    topDoc.set("cosinesimilarity", Json.toJson(String.format("%.2f", cosineSimilarity)));
-                    topDoc.set("jaccardsimilarity", Json.toJson(String.format("%.2f", jaccardsimilarity)));
-                    array.add(topDoc);
-                }
+                topDoc.set("cosinesimilarity", Json.toJson(String.format("%.2f", cosineSimilarity)));
+                topDoc.set("jaccardsimilarity", Json.toJson(String.format("%.2f", jaccardsimilarity)));
+                array.add(topDoc);
             }
         });
         return array;

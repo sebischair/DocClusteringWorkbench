@@ -41,9 +41,9 @@ public class HelperService {
         return getWSResponseWithAuth(SC_BASE_URL + "entities/" + entityId);
     }
 
-    public ArrayNode getSCData(String type_url, List<String> miningAttributes) {
+    public List<ObjectNode> getSCData(String type_url, List<String> miningAttributes) {
         Map<String, ArrayList<String>> map = new HashMap<>();
-        ArrayNode entityArray = new ArrayNode(new JsonNodeFactory(false));
+        List<ObjectNode> entityArray = new ArrayList<>();
         miningAttributes.forEach(attribute -> map.put(attribute, new ArrayList<String>()));
         Logger.info("Begin getting data from SC");
         HelperService hs = new HelperService(ws);

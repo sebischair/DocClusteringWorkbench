@@ -26,6 +26,7 @@ import static spark.utils.SparkStringColumnUtil.addIDColumn;
 
 public class SparkPipelineFactory {
     private String pipelineName;
+    private List<String> documentIds;
     private JsonNode settings;
     private DataLoaderFactory dataLoaderFactory;
     private RegexTokenizer tokenizer;
@@ -50,7 +51,8 @@ public class SparkPipelineFactory {
         dataSet = dataLoaderFactory.getDataLoader(type).loadData(path);
     }
 
-    public SparkPipelineFactory(JsonNode settings) {
+    public SparkPipelineFactory(JsonNode settings, List<String> documentIds) {
+        this.documentIds = documentIds;
         initStopWords();
         dataLoaderFactory = new DataLoaderFactory();
         this.settings = settings;
