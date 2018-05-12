@@ -1,8 +1,8 @@
-name := """DocClustering"""
+name := """Workbench4LSDD-Service"""
 
-version := "1.0"
+version := "1.0-SNAPSHOT"
 
-lazy val root = (project in file(".")).enablePlugins(PlayJava, LauncherJarPlugin)
+lazy val root = (project in file(".")).enablePlugins(PlayJava)
 
 scalaVersion := "2.11.11"
 
@@ -13,6 +13,7 @@ classpathTypes += "maven-plugin"
 
 libraryDependencies ++= Seq(
   filters,
+  javaJdbc,
   cache,
   javaWs,
   "org.webjars" %% "webjars-play" % "2.5.0",
@@ -33,14 +34,17 @@ libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-sql" % "2.2.0",
   "org.apache.spark" %% "spark-streaming" % "2.2.0",
   "org.apache.spark" %% "spark-mllib" % "2.2.0",
-  "org.apache.hadoop" % "hadoop-client" % "2.7.2"
+  "org.apache.hadoop" % "hadoop-client" % "2.7.1"
 )
 
 dependencyOverrides ++= Set(
   "com.fasterxml.jackson.core" % "jackson-core" % "2.6.5",
-  "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.5"
+  "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.5",
+  "nz.ac.waikato.cms.weka" % "weka-dev" % "3.9.1",
+  "org.webjars" % "jquery" % "3.2.1"
 )
 
 unmanagedResourceDirectories in (Compile, runMain) <+=  baseDirectory ( _ /"../myresources")
 
 routesGenerator := InjectedRoutesGenerator
+

@@ -2,6 +2,7 @@ package spark.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import play.Logger;
 
 import java.io.File;
@@ -27,7 +28,7 @@ public class FileUtil {
         return filenames;
     }
 
-    public static StringBuilder jsonToCSVConverter(ArrayNode jsonData, List<String> attributes) {
+    public static StringBuilder jsonToCSVConverter(List<ObjectNode> jsonData, List<String> attributes) {
         StringBuilder sb = new StringBuilder();
         for (JsonNode jsonObject : jsonData) {
             if(jsonObject.isArray()) Logger.info("One of columns was found to be an Array and was ignored");

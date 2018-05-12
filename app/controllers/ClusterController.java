@@ -65,8 +65,10 @@ public class ClusterController extends Controller {
         JsonNode data = request().body().asJson().get("pipeline");
         String filepath = data.has("dataset") ? data.get("dataset").asText("") : "temp";
         String projectKey = data.get("mongoProjectKey").asText("");
+        Logger.info(data.get("scLink").asText());
+        List<ObjectNode> trainingIssues = null;
 
-        if(data.get("scLink").asBoolean()) {
+        if (data.get("scLink").asBoolean()) {
             String filename = data.get("dataset").asText();
             filepath = "myresources/datasets/"+filename;
             String scTypeURL = data.get("scData").get("type").get("href").asText();
@@ -77,7 +79,7 @@ public class ClusterController extends Controller {
             }
 
             HelperService hs = new HelperService(this.ws);
-            ArrayNode scData = hs.getSCData(scTypeURL, miningAttributes);
+            List<ObjectNode> scData = hs.getSCData(scTypeURL, miningAttributes);
             StringBuilder records = jsonToCSVConverter(scData, miningAttributes);
             try {
                 saveDataAsCSV(filepath, records);
@@ -86,14 +88,43 @@ public class ClusterController extends Controller {
             }
         } else if(projectKey != "") {
             Issue issueModel = new Issue();
-            //ArrayNode decisions = issueModel.findAllIssuesInAProject(projectKey);
-            ArrayNode decisions = issueModel.findAllDesignDecisionsInAProject(projectKey);
+            double trainingSize = 0;
+            for (JsonNode option : data.get("algorithm").get("options")) {
+                if (option.get("name").asText().equals("training")) {
+                    trainingSize = option.get("value").asDouble();
+                }
+            }
+            ArrayNode issues = issueModel.findAllDesignDecisionsInAProject(projectKey);
+            List<ObjectNode> orderedIssues = issueModel.orderIssuesByResolutionDate(issues);
+            int trainingDataSetSize = (int) Math.floor(issues.size() * (trainingSize / 100.));
+
+            String scope = "";
+            for (JsonNode option : data.get("algorithm").get("options")) {
+                if (option.get("name").asText().equals("scope")) {
+                    scope = option.get("value").asText();
+                }
+            }
+            if (scope.equals("all")) {
+                ObjectNode lastTrainingIssue = orderedIssues.get(trainingDataSetSize);
+                issues = issueModel.findAllIssuesInAProject(projectKey);
+                orderedIssues = issueModel.orderIssuesByResolutionDate(issues);
+                int index = -1;
+                for (ObjectNode issue : orderedIssues) {
+                    index++;
+                    if (issue.has("name") && issue.get("name").asText().equals(lastTrainingIssue.get("name").asText())) {
+                        break;
+                    }
+                }
+                trainingIssues = orderedIssues.subList(0, index);
+            } else {
+                trainingIssues = orderedIssues.subList(0, trainingDataSetSize);
+            }
             List<String> miningAttributes = new ArrayList<>();
             miningAttributes.add("name");
             miningAttributes.add("summary");
             miningAttributes.add("description");
             filepath = "myresources/datasets/" + data.get("name").asText("");
-            StringBuilder records = jsonToCSVConverter(decisions, miningAttributes);
+            StringBuilder records = jsonToCSVConverter(trainingIssues, miningAttributes);
             try {
                 saveDataAsCSV(filepath, records);
             } catch (FileNotFoundException e) {
@@ -112,7 +143,11 @@ public class ClusterController extends Controller {
             default:
             {
                 Logger.info("....Spark.....");
-                SparkPipelineFactory sparkPipelineFactory = new SparkPipelineFactory(data);
+                List<String> documentIds = new ArrayList<>();
+                trainingIssues.forEach(od -> {
+                    documentIds.add(od.get("name").asText(""));
+                });
+                SparkPipelineFactory sparkPipelineFactory = new SparkPipelineFactory(data, documentIds);
                 Dataset<Row> spark_results = sparkPipelineFactory.trainPipeline(data.get("name").toString(), filepath, "csv");
                 results = Json.toJson(datasetToJson(extractClusterTablefromDataset(spark_results)));
             }

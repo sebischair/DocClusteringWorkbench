@@ -9,24 +9,46 @@
           {
             "name": "KMeans",
             "id": "spark-kmeans",
-            "options": [{
-              "name": "K-value",
-              "value": 20
-            },{
-              "name": "iterations",
-              "value": 10
-            }]
+            "options": [
+              {
+                "name": "K-value",
+                "value": 20
+              },
+              {
+                "name": "iterations",
+                "value": 10
+              },
+              {
+                "name": "training",
+                "value": "90"
+              },
+              {
+                "name": "scope",
+                "value": "all"
+              }
+            ]
           },
           {
             "name": "Bisecting-KMeans",
             "id": "spark-bi-kmeans",
-            "options": [{
-              "name": "K-value",
-              "value": 20
-            },{
-              "name": "iterations",
-              "value": 10
-            }]
+            "options": [
+              {
+                "name": "K-value",
+                "value": 20
+              },
+              {
+                "name": "iterations",
+                "value": 10
+              },
+              {
+                "name": "training",
+                "value": "90"
+              },
+              {
+                "name": "scope",
+                "value": "all"
+              }
+            ]
           }
         ],
         "preprocessors": [
@@ -37,10 +59,12 @@
           {
             "name": "N-Gram",
             "id": "spark-n-gram",
-            "options":[{
-              "name": "N-value",
-              "value": 2
-            }]
+            "options": [
+              {
+                "name": "N-value",
+                "value": 2
+              }
+            ]
           }
         ],
         "transformers": [
@@ -64,10 +88,12 @@
           {
             "name": "Simple KMeans",
             "id": "weka-skm",
-            "options": [{
-              "name": "K-value",
-              "value": 20
-            }]
+            "options": [
+              {
+                "name": "K-value",
+                "value": 20
+              }
+            ]
           },
           {
             "name": "Hierarchial Clustered",

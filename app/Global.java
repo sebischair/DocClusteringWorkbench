@@ -20,6 +20,7 @@ public class Global extends GlobalSettings {
         } catch (Exception e) {
             Logger.error("** Cannot connect to mongo: " + e.toString());
         }
+        System.setProperty("hadoop.home.dir", "C:\\Program Files\\hadoop");
     }
 
     public void onStop(Application app) {
