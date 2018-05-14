@@ -1,8 +1,8 @@
-name := """Workbench4LSDD-Service"""
+name := """DocClustering"""
 
-version := "1.0-SNAPSHOT"
+version := "1.0"
 
-lazy val root = (project in file(".")).enablePlugins(PlayJava)
+lazy val root = (project in file(".")).enablePlugins(PlayJava, LauncherJarPlugin)
 
 scalaVersion := "2.11.11"
 
@@ -13,7 +13,6 @@ classpathTypes += "maven-plugin"
 
 libraryDependencies ++= Seq(
   filters,
-  javaJdbc,
   cache,
   javaWs,
   "org.webjars" %% "webjars-play" % "2.5.0",
@@ -39,12 +38,9 @@ libraryDependencies ++= Seq(
 
 dependencyOverrides ++= Set(
   "com.fasterxml.jackson.core" % "jackson-core" % "2.6.5",
-  "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.5",
-  "nz.ac.waikato.cms.weka" % "weka-dev" % "3.9.1",
-  "org.webjars" % "jquery" % "3.2.1"
+  "com.fasterxml.jackson.core" % "jackson-databind" % "2.6.5"
 )
 
 unmanagedResourceDirectories in (Compile, runMain) <+=  baseDirectory ( _ /"../myresources")
 
 routesGenerator := InjectedRoutesGenerator
-

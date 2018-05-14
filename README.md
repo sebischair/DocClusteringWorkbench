@@ -1,6 +1,12 @@
 # Workbench for Learning Similar Architectural Design Decisions(Service only)
 Service for learning and retrieving similar Architectural Design Decisions
 
+APIs for training and testing cluster models
+
+<a href="https://documenter.getpostman.com/view/693941/collection/RW1aL1Dz" target="_blank">Documentation</a>
+
+[![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/97c1ddbf0f1449724e91)
+
 ## Runtime dependencies:
 JDK - `1.8.0`
 MongoDB - `3.6.2`
@@ -28,8 +34,6 @@ From the command prompt execute
 ## Docker support
 1. Change the database configurations according to the instructions in `application.conf`
 1. Start the complete application stack using `docker-compose up`
-
-Notice: the current docker uses a mongoDB image without any data. This will be dealt with in the future work.
 
 ## How to use DocClustering
 To find out how to use DocClustering, please checkout out the <a href="https://github.com/sebischair/DocClusteringWorkbench/wiki" target="_blank">DocClustering wiki</a>.
