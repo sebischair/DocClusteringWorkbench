@@ -6,15 +6,15 @@ Check out the <a href="https://documenter.getpostman.com/view/4318985/doccluster
 [![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/8a91c26ea8fdde0af599)
 
 ## Runtime dependencies
-JDK - `1.8.0`
-MongoDB - `3.6.2`
+* JDK - `1.8.0`
+* MongoDB - `3.6.2`
 
 ## Core Plugin dependencies (check build.sbt)
-Play - `2.5.9`
-Spark (core, sql, mllib) - `2.0.1`
-Morphia - `1.2.1`
-Angular - `1.5.8`
-Bootstrap - `3.3.6`
+* Play - `2.5.9`
+* Spark (core, sql, mllib) - `2.0.1`
+* Morphia - `1.2.1`
+* Angular - `1.5.8`
+* Bootstrap - `3.3.6`
 
 ##### Experimental
 * DL4J Version: `0.9.1`
