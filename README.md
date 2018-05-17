@@ -23,7 +23,7 @@ Check out the <a href="https://documenter.getpostman.com/view/4318985/doccluster
 ## Configuration
 1. Rename application.local.conf.back to application.local.conf
 1. Fill in database credentials
-1. `morphia.db.name` is the database that stores SyncPipes related information
+1. `morphia.db.name` is the database that stores DocClustering related information
 1. `morphia.amelie.db.name` is the database that sotres projects, issues, etc.
 
 ## Run the project
