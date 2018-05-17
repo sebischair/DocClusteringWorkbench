@@ -1,13 +1,11 @@
 # Workbench for Learning Similar Architectural Design Decisions(Service only)
-Service for learning and retrieving similar Architectural Design Decisions
+DocClustering is a service for learning and retrieving similar architectural design decisions.
 
-APIs for training and testing cluster models
+Check out the <a href="https://documenter.getpostman.com/view/4318985/docclustering/RW86LA17" target="_blank">API documentation</a>.
 
-<a href="https://documenter.getpostman.com/view/693941/collection/RW1aL1Dz" target="_blank">Documentation</a>
+[![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/8a91c26ea8fdde0af599)
 
-[![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/97c1ddbf0f1449724e91)
-
-## Runtime dependencies:
+## Runtime dependencies
 JDK - `1.8.0`
 MongoDB - `3.6.2`
 
@@ -22,14 +20,16 @@ Bootstrap - `3.3.6`
 * DL4J Version: `0.9.1`
 * RapidMiner: Snapshot version to be build locally
 
-## Deploying the project
-Ensure mongodb is running on default port `27017`; else configure settings in Global.java
-From the command prompt execute
-> sbt run
+## Configuration
+1. Rename application.local.conf.back to application.local.conf
+1. Fill in database credentials
+1. `morphia.db.name` is the database that stores SyncPipes related information
+1. `morphia.amelie.db.name` is the database that sotres projects, issues, etc.
 
-## Running Applications
-1. Frontend Application will be available at `localhost:9000`
-1. Spark Web UI is available at `localhost:9090`
+## Run the project
+* From the command prompt execute `sbt run` or `activator run`
+* Frontend Application is available at `localhost:9000`
+* Spark Web UI is available at `localhost:9090`
 
 ## Docker support
 1. Change the database configurations according to the instructions in `application.conf`
