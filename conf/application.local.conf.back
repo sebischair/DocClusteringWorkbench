@@ -2,16 +2,19 @@
 
 # Database configurations
 # Replace "localhost" with "mongo" when you start the app in docker
-# morphia.db.url="localhost"
-# morphia.db.port=27017
-# morphia.db.name="docclustering"
-# morphia.db.username="guest"
-# morphia.db.pwd="guest"
-# morphia.amelie.db.name="amelie_oss"
+morphia.db.url="localhost"
+morphia.db.port=27017
+morphia.db.name="docclustering"
+morphia.db.username="guest"
+morphia.db.pwd="guest"
+morphia.amelie.db.name="amelie_oss"
 
-# sc.base.url="http://server.sociocortex.com/api/v1/"
-# sc.userName=""
-# sc.password=""
+# use this flag to indicate if authentication is enabled on mongo
+morphia.db.isAuthEnabled=false
+
+sc.base.url="http://server.sociocortex.com/api/v1/"
+sc.userName="<sc_username>"
+sc.password="<sc_password>"
 
 # add a secret in application.local.conf when you start the app in docker or run in production mode
 # play.crypto.secret="changeme"
