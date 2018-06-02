@@ -1,0 +1,484 @@
+{
+	"info": {
+		"_postman_id": "d13cb914-b7aa-466d-9f1a-4a25722022ae",
+		"name": "DocClustering",
+		"description": "DocClustering is a service for learning and retrieving similar architectural design decisions.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create a new pipeline",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"pipeline\": {\n\t\t\"name\": \"testNewPipeline\",\n\t\t\"href\": \"/spark/train/pipeline/testNewPipeline\",\n\t\t\"mongoProjectKey\": \"SPARK\",\n\t\t\"scLink\": false,\n\t\t\"dataset\": \"test\",\n\t\t\"library\": {\n\t\t\t\"id\": 1\n\t\t},\n\t\t\"transformer\": {\n\t\t\t\"id\": \"spark-word2vec\"\n\t\t},\n\t\t\"algorithm\": {\n\t\t\t\"id\": \"spark-kmeans\",\n\t\t\t\"name\": \"spark-kmeans\",\n\t\t\t\"options\": [{\n\t\t\t\t\"name\": \"K-value\",\n\t\t\t\t\"value\": 30\n\t\t\t}, {\n\t\t\t\t\"name\": \"iterations\",\n\t\t\t\t\"value\": 10\n\t\t\t}]\n\t\t}\n\t}\n}"
+				},
+				"url": {
+					"raw": "{{SERVER_URL}}/clustering/pipeline/create",
+					"host": [
+						"{{SERVER_URL}}"
+					],
+					"path": [
+						"clustering",
+						"pipeline",
+						"create"
+					]
+				},
+				"description": "This endpoint is used to create a new clustering pipeline.\n\nThe request body is a JSON object containing training algorithm. The trained results will be returned."
+			},
+			"response": []
+		},
+		{
+			"name": "Get all clustering libraries",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "{{SERVER_URL}}/clustering/libraries",
+					"host": [
+						"{{SERVER_URL}}"
+					],
+					"path": [
+						"clustering",
+						"libraries"
+					]
+				},
+				"description": "This endpoint is used to retrieve all clustering libraries together with their clustering algorithms."
+			},
+			"response": [
+				{
+					"id": "19564a7c-c592-423a-8327-d360634184d2",
+					"name": "Get clustering libraries example",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{SERVER_URL}}/clustering/libraries",
+							"host": [
+								"{{SERVER_URL}}"
+							],
+							"path": [
+								"clustering",
+								"libraries"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Length",
+							"value": "1328",
+							"name": "Content-Length",
+							"description": "The length of the response body in octets (8-bit bytes)"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=UTF-8",
+							"name": "Content-Type",
+							"description": "The mime type of this content"
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 17 May 2018 13:25:21 GMT",
+							"name": "Date",
+							"description": "The date and time that the message was sent"
+						}
+					],
+					"cookie": [],
+					"body": "{\"libraries\":[{\"name\":\"Apache Spark\",\"id\":1,\"enable\":true,\"options\":{\"algorithms\":[{\"name\":\"KMeans\",\"id\":\"spark-kmeans\",\"options\":[{\"name\":\"K-value\",\"value\":20},{\"name\":\"iterations\",\"value\":10}]},{\"name\":\"Bisecting-KMeans\",\"id\":\"spark-bi-kmeans\",\"options\":[{\"name\":\"K-value\",\"value\":20},{\"name\":\"iterations\",\"value\":10}]}],\"preprocessors\":[{\"name\":\"Stop Words Remover\",\"id\":\"spark-stop-word-remover\"},{\"name\":\"N-Gram\",\"id\":\"spark-n-gram\",\"options\":[{\"name\":\"N-value\",\"value\":2}]}],\"transformers\":[{\"name\":\"Hashing-TF\",\"id\":\"hashing-tf\"},{\"name\":\"Word2Vec\",\"id\":\"spark-word2vec\"}]}},{\"name\":\"WEKA\",\"id\":2,\"enable\":false,\"options\":{\"algorithms\":[{\"name\":\"Simple KMeans\",\"id\":\"weka-skm\",\"options\":[{\"name\":\"K-value\",\"value\":20}]},{\"name\":\"Hierarchial Clustered\",\"id\":\"weka-hc\"},{\"name\":\"Farthest First\",\"id\":\"weka-ff\"},{\"name\":\"EM\",\"id\":\"weka-em\"},{\"name\":\"Filtered Clustered\",\"id\":\"weka-em\"}],\"preprocessors\":[{\"name\":\"Tokenize\",\"id\":\"weka-tokenizer\"},{\"name\":\"Remove Stop Words\",\"id\":\"weka-stop-word-remover\"},{\"name\":\"To Lower Case\",\"id\":\"weka-to-lowercase\"},{\"name\":\"Remove Punctuations\",\"id\":\"weka-remove-punctuations\"},{\"name\":\"Generate N-Gram\",\"id\":\"weka-n-gram\"}],\"transformers\":[{\"name\":\"Hashing-TF\",\"id\":\"weka-hashing-tf\"},{\"name\":\"StringToWordVec\",\"id\":\"weka-string2wordVec\"},{\"name\":\"Bi-Grams\",\"id\":\"weka-bigrams\"}]}}]}"
+				}
+			]
+		},
+		{
+			"name": "Get pipeline names",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "{{SERVER_URL}}/clustering/pipelines",
+					"host": [
+						"{{SERVER_URL}}"
+					],
+					"path": [
+						"clustering",
+						"pipelines"
+					]
+				},
+				"description": "This endpoint is used to retrieve all existing pipeline names."
+			},
+			"response": [
+				{
+					"id": "f039c017-5e54-4dd6-9f65-2d19ffbb8919",
+					"name": "Get all trained pipelines example",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{SERVER_URL}}/clustering/pipelines",
+							"host": [
+								"{{SERVER_URL}}"
+							],
+							"path": [
+								"clustering",
+								"pipelines"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Length",
+							"value": "37",
+							"name": "Content-Length",
+							"description": "The length of the response body in octets (8-bit bytes)"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=UTF-8",
+							"name": "Content-Type",
+							"description": "The mime type of this content"
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 17 May 2018 13:28:15 GMT",
+							"name": "Date",
+							"description": "The date and time that the message was sent"
+						}
+					],
+					"cookie": [],
+					"body": "[\"Hadoop Clustering\",\"test\",\"Hadoop\"]"
+				}
+			]
+		},
+		{
+			"name": "Get all pipeline data",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "{{SERVER_URL}}/clustering/pipelines/getAll",
+					"host": [
+						"{{SERVER_URL}}"
+					],
+					"path": [
+						"clustering",
+						"pipelines",
+						"getAll"
+					]
+				},
+				"description": "This endpoint is used to retrieve all trained pipelines together with training information."
+			},
+			"response": [
+				{
+					"id": "b0fc3e7f-52c6-45e9-a158-ea46c684779d",
+					"name": "Get details about all trained pipelines example",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{SERVER_URL}}/clustering/pipelines/getAll",
+							"host": [
+								"{{SERVER_URL}}"
+							],
+							"path": [
+								"clustering",
+								"pipelines",
+								"getAll"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Length",
+							"value": "804",
+							"name": "Content-Length",
+							"description": "The length of the response body in octets (8-bit bytes)"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=UTF-8",
+							"name": "Content-Type",
+							"description": "The mime type of this content"
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 17 May 2018 13:33:27 GMT",
+							"name": "Date",
+							"description": "The date and time that the message was sent"
+						}
+					],
+					"cookie": [],
+					"body": "{\"pipelines\":[{\"className\":\"model.ClusterPipeline\",\"_id\":{\"$oid\":\"5ad48bb83ad48de7ff5c74e3\"},\"href\":\"/spark/train/pipeline/test\",\"name\":\"test\",\"library\":\"1\",\"algorithm\":{\"id\":\"spark-kmeans\",\"name\":\"KMeans\",\"options\":[{\"name\":\"K-value\",\"value\":20},{\"name\":\"iterations\",\"value\":10}]},\"transformer\":\"hashing-tf\",\"dataset\":\"test\"},{\"className\":\"model.ClusterPipeline\",\"_id\":{\"$oid\":\"5af9f603d763135199877b78\"},\"href\":\"/spark/train/pipeline/test\",\"name\":\"test\",\"library\":\"1\",\"algorithm\":{\"id\":\"spark-kmeans\",\"name\":\"KMeans\",\"options\":[{\"name\":\"K-value\",\"value\":20},{\"name\":\"iterations\",\"value\":10}]},\"transformer\":\"hashing-tf\",\"dataset\":\"test\",\"type\":{\"_id\":\"1vk4hqzziw3jp\",\"href\":\"https://server.sociocortex.com/api/v1/entityTypes/1vk4hqzziw3jp\",\"name\":\"Task\"},\"miningAttributes\":[\"Summary\",\"Description\"]}]}"
+				}
+			]
+		},
+		{
+			"name": "Get one pipeline data",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "{{SERVER_URL}}/clustering/pipeline/:pipelineName",
+					"host": [
+						"{{SERVER_URL}}"
+					],
+					"path": [
+						"clustering",
+						"pipeline",
+						":pipelineName"
+					],
+					"variable": [
+						{
+							"key": "pipelineName",
+							"value": "test"
+						}
+					]
+				},
+				"description": "This endpoint is used to retrieve information of a pipeline.\n\nIt accepts a string `pipelineName` as a parameter. A JSON object containing the training algorithm will be returned."
+			},
+			"response": [
+				{
+					"id": "67d3024c-a927-4da8-a447-ef2627a63052",
+					"name": "Get one pipeline data example",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{SERVER_URL}}/clustering/pipeline/:pipelineName",
+							"host": [
+								"{{SERVER_URL}}"
+							],
+							"path": [
+								"clustering",
+								"pipeline",
+								":pipelineName"
+							],
+							"variable": [
+								{
+									"key": "pipelineName",
+									"value": "test"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Length",
+							"value": "312",
+							"name": "Content-Length",
+							"description": "The length of the response body in octets (8-bit bytes)"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=UTF-8",
+							"name": "Content-Type",
+							"description": "The mime type of this content"
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 17 May 2018 13:39:32 GMT",
+							"name": "Date",
+							"description": "The date and time that the message was sent"
+						}
+					],
+					"cookie": [],
+					"body": "{\"className\":\"model.ClusterPipeline\",\"_id\":{\"$oid\":\"5ad48bb83ad48de7ff5c74e3\"},\"href\":\"/spark/train/pipeline/test\",\"name\":\"test\",\"library\":\"1\",\"algorithm\":{\"id\":\"spark-kmeans\",\"name\":\"KMeans\",\"options\":[{\"name\":\"K-value\",\"value\":20},{\"name\":\"iterations\",\"value\":10}]},\"transformer\":\"hashing-tf\",\"dataset\":\"test\"}"
+				}
+			]
+		},
+		{
+			"name": "Get clustering results of a pipeline",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://localhost:9000/pipeline/clusters/:pipelineName",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"pipeline",
+						"clusters",
+						":pipelineName"
+					],
+					"variable": [
+						{
+							"key": "pipelineName",
+							"value": "test"
+						}
+					]
+				},
+				"description": "This endpoint is used to retrieve clustering results of a pipeline.\n\nIt accepts a string `pipelineName` as a parameter."
+			},
+			"response": [
+				{
+					"id": "e65fe9ad-a1d7-412a-9919-59d06196c8c6",
+					"name": "Get clustering results of a pipeline example",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "http://localhost:9000/pipeline/clusters/:pipelineName",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"pipeline",
+								"clusters",
+								":pipelineName"
+							],
+							"variable": [
+								{
+									"key": "pipelineName",
+									"value": "test"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Length",
+							"value": "2711429",
+							"name": "Content-Length",
+							"description": "The length of the response body in octets (8-bit bytes)"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=UTF-8",
+							"name": "Content-Type",
+							"description": "The mime type of this content"
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 17 May 2018 13:53:47 GMT",
+							"name": "Date",
+							"description": "The date and time that the message was sent"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"member_count\": \"1470\",\n    \"cluster_table\": [\n        {\n            \"cluster_label\": 0,\n            \"count\": 1142,\n            \"members\": [\n                {\n                    \"DOC_ID\": 2,\n                    \"_c0\": \" Refactor JDBCRDD to expose JDBC    SparkSQL conversion functionality\",\n                    \"_c1\": \" It would be useful if more of JDBCRDD s JDBC    Spark SQL functionality was usable from outside of JDBCRDD  this would make it easier to write test harnesses comparing Spark output against other JDBC databases\",\n                    \"cluster_label\": 0,\n                    \"customwordsfiltered\": [\n                        \"would\",\n                        \"useful\",\n                        \"more\",\n                        \"jdbcrdd\",\n                        \"jdbc\",\n                        \"sql\",\n                        \"functionality\"\n                    ],\n                    \"document\": \" it would be useful if more of jdbcrdd s jdbc    spark sql functionality was usable from outside of jdbcrdd  this would make it easier to write test harnesses comparing spark output against other jdbc databases\",\n                    \"filtered\": [\n                        \"useful\",\n                        \"jdbcrdd\"\n                    ],\n                    \"words\": [\n                        \"would\",\n                        \"useful\",\n                        \"more\",\n                        \"jdbcrdd\"\n                    ]\n                },\n                {\n                \t\"DOC_ID\": 3,\n                \t...\n                }\n            ]\n                \n\t\t}\n\t]\n}"
+				}
+			]
+		},
+		{
+			"name": "Get similar documents in a cluster",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"pipelineName\": \"test\",\n\t\"textToClassify\": \"Import Signals Data into TDB\"\n}"
+				},
+				"url": {
+					"raw": "{{SERVER_URL}}/clustering/pipeline/predict",
+					"host": [
+						"{{SERVER_URL}}"
+					],
+					"path": [
+						"clustering",
+						"pipeline",
+						"predict"
+					]
+				},
+				"description": "This endpoint is used to retrieve similar documents for the document in question. The new document will be assigned to a cluster according to the pipeline, and similar documents in the same cluster will be returned.\n\nThe request body contains two keys: `pipelineName` and `textToClassify`."
+			},
+			"response": [
+				{
+					"id": "0b52772f-60df-495b-a64f-ac8529a9fb49",
+					"name": "Get similar documents from trained pipeline clusters example",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"disabled": false
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"pipelineName\": \"test\",\n\t\"textToClassify\": \"Import Signals Data into TDB\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:9000/clustering/pipeline/predict",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "9000",
+							"path": [
+								"clustering",
+								"pipeline",
+								"predict"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Length",
+							"value": "842271",
+							"name": "Content-Length",
+							"description": "The length of the response body in octets (8-bit bytes)"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json; charset=UTF-8",
+							"name": "Content-Type",
+							"description": "The mime type of this content"
+						},
+						{
+							"key": "Date",
+							"value": "Thu, 17 May 2018 13:20:39 GMT",
+							"name": "Date",
+							"description": "The date and time that the message was sent"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"result\": [\n        {\n            \"DOC_ID\": 1463,\n            \"_c0\": \" Use different physical plan for existing RDD and data sources\",\n            \"_c1\": \" Right now  we use PhysicalRDD for both existing RDD and data sources  they are becoming much different  we should use different physical plans for them\",\n            \"cluster_label\": 0,\n            \"customwordsfiltered\": [\n                \"right\",\n                \"now\",\n                \"use\",\n                \"physicalrdd\",\n                \"for\",\n                \"both\",\n                \"existing\",\n                \"rdd\",\n                \"and\",\n                \"data\",\n                \"sources\",\n                \"are\",\n                \"becoming\",\n                \"different\",\n                \"should\",\n                \"use\",\n                \"different\",\n                \"physical\",\n                \"plans\",\n                \"for\",\n                \"them\"\n            ],\n            \"document\": \" right now  we use physicalrdd for both existing rdd and data sources  they are becoming much different  we should use different physical plans for them\",\n            \"features\": {\n                \"indices\": [\n                    13,\n                    36,\n                    48,\n                    89,\n                    98,\n                    138,\n                    333,\n                    371,\n                    429,\n                    489,\n                    524,\n                    574,\n                    649,\n                    665,\n                    695,\n                    843,\n                    863,\n                    870,\n                    897,\n                    924\n                ],\n                \"size\": 1000,\n                \"type\": 0,\n                \"values\": [\n                    1,\n                    2,\n                    1,\n                    2,\n                    1,\n                    1,\n                    1,\n                    1,\n                    1,\n                    2,\n                    1,\n                    1,\n                    1,\n                    1,\n                    1,\n                    1,\n                    1,\n                    1,\n                    1,\n                    1\n                ]\n            },\n            \"filtered\": [\n                \"right\",\n                \"use\",\n                \"physicalrdd\",\n                \"existing\",\n                \"rdd\",\n                \"data\",\n                \"sources\",\n                \"becoming\",\n                \"different\",\n                \"use\",\n                \"different\",\n                \"physical\",\n                \"plans\"\n            ],\n            \"words\": [\n                \"right\",\n                \"now\",\n                \"use\",\n                \"physicalrdd\",\n                \"for\",\n                \"both\",\n                \"existing\",\n                \"rdd\",\n                \"and\",\n                \"data\",\n                \"sources\",\n                \"they\",\n                \"are\",\n                \"becoming\",\n                \"much\",\n                \"different\",\n                \"should\",\n                \"use\",\n                \"different\",\n                \"physical\",\n                \"plans\",\n                \"for\",\n                \"them\"\n            ],\n            \"cosinesimilarity\": \"47.68\",\n            \"jaccardsimilarity\": \"7.14\"\n        }\n    ]\n}"
+				}
+			]
+		}
+	]
+}
