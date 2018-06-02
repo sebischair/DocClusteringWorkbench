@@ -74,4 +74,8 @@ public class Issue {
         }
         return issue;
     }
+
+    public void updateIssueByKey(String key, BasicDBObject newConcepts) {
+        issueCollection.updateOne(new BasicDBObject().append("name", key), newConcepts);
+    }
 }

@@ -3,6 +3,7 @@ package controllers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.mongodb.BasicDBObject;
 import model.ClusterPipeline;
 import model.amelie.Issue;
 import org.apache.spark.sql.Dataset;
@@ -15,6 +16,7 @@ import play.mvc.Http;
 import play.mvc.Result;
 import services.HelperService;
 import services.PipelineService;
+import spark.SparkSessionComponent;
 import spark.pipelines.SparkPipelineFactory;
 import spark.pipelines.SparkPredictPipeline;
 import util.StaticFunctions;
@@ -23,7 +25,9 @@ import javax.inject.Inject;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.lang.Integer.parseInt;
 import static spark.utils.FileUtil.jsonToCSVConverter;
@@ -66,7 +70,7 @@ public class ClusterController extends Controller {
         String filepath = data.has("dataset") ? data.get("dataset").asText("") : "temp";
         String projectKey = data.get("mongoProjectKey").asText("");
 
-        if(data.get("scLink").asBoolean()) {
+        if(data.hasNonNull("scLink") && data.get("scLink").asBoolean()) {
             String filename = data.get("dataset").asText();
             filepath = "myresources/datasets/"+filename;
             String scTypeURL = data.get("scData").get("type").get("href").asText();
@@ -92,7 +96,7 @@ public class ClusterController extends Controller {
             miningAttributes.add("name");
             miningAttributes.add("summary");
             miningAttributes.add("description");
-            filepath = "myresources/datasets/" + data.get("name").asText("");
+            filepath = "myresources/datasets/" + projectKey;
             StringBuilder records = jsonToCSVConverter(decisions, miningAttributes);
             try {
                 saveDataAsCSV(filepath, records);
@@ -113,7 +117,7 @@ public class ClusterController extends Controller {
             {
                 Logger.info("....Spark.....");
                 SparkPipelineFactory sparkPipelineFactory = new SparkPipelineFactory(data);
-                Dataset<Row> spark_results = sparkPipelineFactory.trainPipeline(data.get("name").toString(), filepath, "csv");
+                Dataset<Row> spark_results = sparkPipelineFactory.trainPipeline(projectKey, filepath, "csv");
                 results = Json.toJson(datasetToJson(extractClusterTablefromDataset(spark_results)));
             }
             break;
@@ -153,5 +157,48 @@ public class ClusterController extends Controller {
         }
     }
 
+    public Result updateSimilarDocuments(String projectKey) {
+        SparkSessionComponent sparkSessionComponent = SparkSessionComponent.getSparkSessionComponent();
+        sparkSessionComponent.getSparkSession();
+
+        ObjectNode result = Json.newObject();
+        ClusterPipeline pipeline = PipelineService.getClusterPipeline(projectKey);
+        SparkPredictPipeline predictPipeline = new SparkPredictPipeline(projectKey);
+        if(pipeline != null) {
+            Issue issueModel = new Issue();
+            ArrayNode issues = issueModel.findAllDesignDecisionsInAProject(projectKey);
+            issues.forEach(issue -> {
+                Logger.debug("Processing issues: " + issue.get("name").asText(""));
+                String text = StaticFunctions.cleanText(issue.get("summary").asText("") + " " + issue.get("description").asText("")).toLowerCase();
+                ArrayNode predictResult = predictPipeline.predict(text);
+                List similarDocuments = new ArrayList();
+                for(int i=0; i<predictResult.size(); i++) {
+                    ObjectNode sd = (ObjectNode) predictResult.get(i);
+                    Map similarDocument = new HashMap();
+                    similarDocument.put("name", sd.get("_c0").asText(""));
+                    if(sd.has("_c1")) similarDocument.put("summary", sd.get("_c1").asText("").trim());
+                    else similarDocument.put("summary", "");
+                    if(sd.has("_c2")) similarDocument.put("description", sd.get("_c2").asText("").trim());
+                    else similarDocument.put("description", "");
+                    //similarDocument.set("features", sd.get("filtered"));
+                    similarDocument.put("cosinesimilarity", sd.get("cosinesimilarity").asText(""));
+                    similarDocument.put("jaccardsimilarity", sd.get("jaccardsimilarity").asText(""));
+                    similarDocuments.add(similarDocument);
+                }
+                if(similarDocuments.size() > 0) {
+                    BasicDBObject newConcepts = new BasicDBObject();
+                    newConcepts.append("$set", new BasicDBObject().append("amelie.similarDocuments", similarDocuments));
+                    issueModel.updateIssueByKey(issue.get("name").asText(), newConcepts);
+                }
+            });
+            result.put("status", "OK");
+            result.put("statusCode", "200");
+        } else {
+            result.put("status", "KO");
+            result.put("statusCode", "400");
+            result.put("result", "Could not find the pipeline: " + projectKey);
+        }
+        return ok(result);
+    }
 }
 

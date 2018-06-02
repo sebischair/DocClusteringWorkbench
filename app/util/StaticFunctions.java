@@ -6,6 +6,9 @@ import com.mongodb.util.JSON;
 import db.DefaultMongoClient;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.safety.Whitelist;
 
 import java.util.*;
 
@@ -63,5 +66,29 @@ public class StaticFunctions {
     public static JsonNode getSortedClusterResults(Dataset<Row> dataset) {
         Dataset<Row> sortedResults = dataset.sort("cluster_label");
         return clusterTableToJson(sortedResults);
+    }
+
+    public static String cleanText(String str) {
+        String result;
+        if (str == null) return str;
+        Document document = Jsoup.parse(str);
+        document.outputSettings(new Document.OutputSettings().prettyPrint(false));// makes html() preserve linebreaks and spacing
+        document.select("br").append("\\n");
+        document.select("p").prepend("\\n\\n");
+        result = document.html().replaceAll("\\\\n", "\n");
+        result = Jsoup.clean(result, "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false));
+        result = removeUrl(result);
+        result = removeExtendedChars(result);
+        return result;
+    }
+
+    public static String removeUrl(String str) {
+        String regex = "\\b(https?|ftp|file|telnet|http|Unsure)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
+        str = str.replaceAll(regex, "");
+        return str;
+    }
+
+    public static String removeExtendedChars(String str) {
+        return str.toLowerCase().replaceAll("[^\\x00-\\x7F]", " ").replaceAll(" +", " ").replaceAll("[^a-zA-Z\\s]", " ").replaceAll("^\\w{1,10}\\b", " ").replaceAll("\\r\\n|\\r|\\n", " ").replaceAll("class", "");
     }
 }

@@ -3,6 +3,7 @@ package spark.utils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import play.Logger;
+import util.StaticFunctions;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -35,7 +36,7 @@ public class FileUtil {
                 String attributeName = attributes.get(i);
                 String attributeValue = jsonObject.get(attributeName).asText(" ");
                 if(attributeName != "name")
-                    attributeValue = attributeValue.replaceAll("[^a-zA-Z0-9\\s]", " ").replaceAll("^\\w{1,10}\\b", " ").replaceAll("\\r\\n|\\r|\\n", " ");;
+                    attributeValue = StaticFunctions.cleanText(attributeValue);
                 sb.append(attributeValue);
                 sb.append(",");
             }
