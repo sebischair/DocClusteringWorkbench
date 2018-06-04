@@ -18,6 +18,7 @@ POST        /clustering/pipeline/create         controllers.ClusterController.cr
 POST        /clustering/dataset/upload          controllers.ClusterController.datasetUpload
 POST        /clustering/pipeline/predict        controllers.ClusterController.getSimilarDocuments
 GET         /pipeline/updateSimilarDocuments/:projectKey     controllers.ClusterController.updateSimilarDocuments(projectKey: String)
+GET         /similarDecisions                   controllers.ClusterController.updateSimilarDocumentsForDD(issueKey: String)
 
 #Example Pipelines
 GET         /spark/kmeans/example1              controllers.ExampleController.runPipelineExample1

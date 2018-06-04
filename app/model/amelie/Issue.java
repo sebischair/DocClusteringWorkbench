@@ -9,6 +9,7 @@ import com.mongodb.client.MongoCursor;
 import db.AmelieMongoClient;
 import org.bson.Document;
 import play.libs.Json;
+import util.StaticFunctions;
 
 /**
  * Created by Manoj on 11/28/2017.
@@ -29,18 +30,25 @@ public class Issue {
         return issues;
     }
 
+    public ObjectNode getDesignDecisionByKey(String projectKey) {
+        return getIssueDetails(Json.toJson(issueCollection.find(new BasicDBObject().append("name", projectKey)).first()));
+    }
+
     private ObjectNode getIssueDetails(JsonNode obj) {
         ObjectNode issue = Json.newObject();
-        issue.set("name", obj.get("name"));
+        issue.put("name", obj.get("name"));
         if(obj.has("fields")) {
             JsonNode fields = obj.get("fields");
-            issue.put("summary", fields.get("summary").asText(""));
+            issue.put("summary", fields.get("summary").asText("").replaceAll("\\$", ""));
 
-            String description = fields.get("description") != null ? fields.get("description").asText("") : "temp";
+            String description = fields.get("description") != null ? fields.get("description").asText("").replaceAll("\\$", "") : "";
             issue.put("description", description);
+            if(description != null) { issue.put("shortDescription", StaticFunctions.truncate(description)); }
+            else { issue.put("shortDescription", ""); }
 
             issue.put("created", fields.get("created").asText(""));
-            issue.put("resolved", fields.get("resolutiondate").asText(""));
+            if(fields.has("resolutiondate"))
+                issue.put("resolved", fields.get("resolutiondate").asText(""));
 
             if(fields.has("project"))
                 issue.put("belongsTo", fields.get("project").get("key").asText(""));
@@ -50,17 +58,22 @@ public class Issue {
                 issue.put("status", fields.get("status").get("name").asText(""));
             if(fields.has("resolution") && fields.get("resolution").get("name") != null)
                 issue.put("resolution", fields.get("resolution").get("name").asText(""));
-            if(fields.has("priority"))
+            if(fields.has("priority") && fields.get("priority").has("name"))
                 issue.put("priority", fields.get("priority").get("name").asText(""));
-            if(fields.has("assignee") && fields.get("assignee").has("displayName"))
-                issue.put("assignee", fields.get("assignee").get("displayName").asText(""));
-            if(fields.has("reporter"))
+            if(fields.has("assignee") && fields.get("assignee").has("name")) {
+                String name = fields.get("assignee").get("name").asText("");
+                if(name.contains("(")) {
+                    name = name.split("\\(")[0];
+                }
+                issue.put("assignee", name);
+            }
+            if(fields.has("reporter") && fields.get("reporter").has("name"))
                 issue.put("reporter", fields.get("reporter").get("name").asText(""));
         }
         if(obj.has("amelie")) {
             JsonNode amelie = obj.get("amelie");
-            issue.set("designDecision", amelie.get("designDecision"));
-            issue.set("decisionCategory", amelie.get("decisionCategory"));
+            issue.put("designDecision", amelie.get("designDecision"));
+            issue.put("decisionCategory", amelie.get("decisionCategory"));
             if(amelie.hasNonNull("concepts")) {
                 issue.set("concepts", amelie.get("concepts"));
             }
@@ -71,6 +84,10 @@ public class Issue {
                 issue.set("qualityAttributes", amelie.get("qualityAttributes"));
             else
                 issue.put("qualityAttributes", "");
+
+            if(amelie.has("similarDocuments")) {
+                issue.put("similarDocuments", amelie.get("similarDocuments"));
+            }
         }
         return issue;
     }

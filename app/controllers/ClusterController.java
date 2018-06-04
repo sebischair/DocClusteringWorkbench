@@ -167,30 +167,7 @@ public class ClusterController extends Controller {
         if(pipeline != null) {
             Issue issueModel = new Issue();
             ArrayNode issues = issueModel.findAllDesignDecisionsInAProject(projectKey);
-            issues.forEach(issue -> {
-                Logger.debug("Processing issues: " + issue.get("name").asText(""));
-                String text = StaticFunctions.cleanText(issue.get("summary").asText("") + " " + issue.get("description").asText("")).toLowerCase();
-                ArrayNode predictResult = predictPipeline.predict(text);
-                List similarDocuments = new ArrayList();
-                for(int i=0; i<predictResult.size(); i++) {
-                    ObjectNode sd = (ObjectNode) predictResult.get(i);
-                    Map similarDocument = new HashMap();
-                    similarDocument.put("name", sd.get("_c0").asText(""));
-                    if(sd.has("_c1")) similarDocument.put("summary", sd.get("_c1").asText("").trim());
-                    else similarDocument.put("summary", "");
-                    if(sd.has("_c2")) similarDocument.put("description", sd.get("_c2").asText("").trim());
-                    else similarDocument.put("description", "");
-                    //similarDocument.set("features", sd.get("filtered"));
-                    similarDocument.put("cosinesimilarity", sd.get("cosinesimilarity").asText(""));
-                    similarDocument.put("jaccardsimilarity", sd.get("jaccardsimilarity").asText(""));
-                    similarDocuments.add(similarDocument);
-                }
-                if(similarDocuments.size() > 0) {
-                    BasicDBObject newConcepts = new BasicDBObject();
-                    newConcepts.append("$set", new BasicDBObject().append("amelie.similarDocuments", similarDocuments));
-                    issueModel.updateIssueByKey(issue.get("name").asText(), newConcepts);
-                }
-            });
+            issues.forEach(issue -> processAnIssue(issue, predictPipeline));
             result.put("status", "OK");
             result.put("statusCode", "200");
         } else {
@@ -198,6 +175,52 @@ public class ClusterController extends Controller {
             result.put("statusCode", "400");
             result.put("result", "Could not find the pipeline: " + projectKey);
         }
+        return ok(result);
+    }
+
+    private void processAnIssue(JsonNode issue, SparkPredictPipeline predictPipeline) {
+        Logger.debug("Processing issues: " + issue.get("name").asText(""));
+        String text = StaticFunctions.cleanText(issue.get("summary").asText("") + " " + issue.get("description").asText("")).toLowerCase();
+        ArrayNode predictResult = predictPipeline.predict(text);
+        List similarDocuments = new ArrayList();
+        for(int i=0; i<predictResult.size(); i++) {
+            ObjectNode sd = (ObjectNode) predictResult.get(i);
+            Map similarDocument = new HashMap();
+            similarDocument.put("name", sd.get("_c0").asText(""));
+            if(sd.has("_c1")) similarDocument.put("summary", sd.get("_c1").asText("").trim());
+            else similarDocument.put("summary", "");
+            if(sd.has("_c2")) similarDocument.put("description", sd.get("_c2").asText("").trim());
+            else similarDocument.put("description", "");
+            //similarDocument.set("features", sd.get("filtered"));
+            similarDocument.put("cosinesimilarity", sd.get("cosinesimilarity").asText(""));
+            similarDocument.put("jaccardsimilarity", sd.get("jaccardsimilarity").asText(""));
+            similarDocuments.add(similarDocument);
+        }
+        if(similarDocuments.size() > 0) {
+            BasicDBObject newConcepts = new BasicDBObject();
+            newConcepts.append("$set", new BasicDBObject().append("amelie.similarDocuments", similarDocuments));
+            new Issue().updateIssueByKey(issue.get("name").asText(), newConcepts);
+        }
+    }
+
+    public Result updateSimilarDocumentsForDD(String issueKey) {
+        ObjectNode result = Json.newObject();
+        Issue issueModel = new Issue();
+        ObjectNode issue = issueModel.getDesignDecisionByKey(issueKey);
+        if(issue.has("belongsTo")) {
+            String projectKey = issue.get("belongsTo").asText("");
+            ClusterPipeline pipeline = PipelineService.getClusterPipeline(projectKey);
+            SparkPredictPipeline predictPipeline = new SparkPredictPipeline(projectKey);
+            if(pipeline != null) {
+                processAnIssue(issue, predictPipeline);
+            } else {
+                result.put("status", "KO");
+                result.put("statusCode", "400");
+                result.put("result", "Could not find the pipeline: " + projectKey);
+            }
+        }
+        result.put("status", "OK");
+        result.put("statusCode", "200");
         return ok(result);
     }
 }

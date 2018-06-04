@@ -19,6 +19,14 @@ import static spark.utils.SparkDatasetUtil.clusterTableToJson;
  */
 public class StaticFunctions {
 
+    public static String truncate(String text){
+        int limit = 150;
+        if (text.length() > limit)
+            return text.substring(0, limit) + " \u2026";
+        else
+            return text;
+    }
+
     public static String getStringValueFromSCObject(JsonNode entityAttributes, String attributeName) {
         if (entityAttributes != null)
             for (int j = 0; j < entityAttributes.size(); j++) {
