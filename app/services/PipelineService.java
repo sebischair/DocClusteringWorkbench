@@ -6,8 +6,11 @@ import model.*;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import play.Logger;
+import play.Play;
 import spark.SparkSessionComponent;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,13 +23,20 @@ public class PipelineService {
     }
 
     public static List<String> getAllClustersResults(){
-        return getFilesList("myresources/results");
+        File resultsFile = Play.application().getFile("myresources/results");
+        return getFilesList(resultsFile.getAbsolutePath());
     }
 
     public static Dataset<Row> getPipelineClusters(String pipelineName){
         SparkSessionComponent sparkSessionComponent = SparkSessionComponent.getSparkSessionComponent();
         SparkSession spark = sparkSessionComponent.getSparkSession();
-        return spark.read().json("myresources/results/" + pipelineName);
+        File resultsFile = Play.application().getFile("myresources/results/" + pipelineName);
+        try {
+            return spark.read().json(resultsFile.getAbsolutePath());
+        } catch ( Exception e) {
+            Logger.error("File not found: " + resultsFile.getAbsolutePath());
+        }
+        return null;
     }
 
     public static void saveClusterPipelineSettings(JsonNode settings){

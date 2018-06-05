@@ -18,6 +18,10 @@ RUN cd ${PROJECT_HOME} && \
     unzip docclustering-1.0.zip && \
     chmod +x ${PROJECT_HOME}/docclustering-1.0/bin/docclustering
 
+RUN mkdir -p /usr/src/docclustering-1.0/myresources
+COPY myresources /usr/src/docclustering-1.0/myresources
+
+RUN export JAVA_OPTS="-Xms512m -Xmx1g"
 CMD ["/usr/src/docclustering-1.0/bin/docclustering", "-Dhttp.port=3006"]
 
 # Expose port 3006

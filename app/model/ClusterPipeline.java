@@ -9,7 +9,7 @@ import org.mongodb.morphia.annotations.Indexed;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity("cluster-pipelines")
+@Entity("clusterPipelines")
 public class ClusterPipeline  extends PersistentEntity{
 
     @Id

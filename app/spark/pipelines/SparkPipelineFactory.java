@@ -10,6 +10,8 @@ import org.apache.spark.ml.clustering.KMeans;
 import org.apache.spark.ml.feature.*;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
+import play.Logger;
+import play.Play;
 import spark.dataloaders.DataLoaderFactory;
 
 import java.io.File;
@@ -125,7 +127,6 @@ public class SparkPipelineFactory {
                 System.out.println(".....Spark KMeans.......");
                 ArrayNode kmeansOptions = (ArrayNode) algorithm.get("options");
                 setKMeansOptions(kmeansOptions);
-                System.out.println(settings.get("transformer").get("id").toString());
                 switch (settings.get("transformer").get("id").asText()) {
                     case "spark-word2vec":
                         System.out.println(".....Spark Word2Vec.......");
@@ -196,16 +197,30 @@ public class SparkPipelineFactory {
     }
 
     private void savePipelineModel() {
-        String path = "myresources/models/" + pipelineName;
+        File dir = Play.application().getFile("myresources/models");
+        if(!dir.exists()) {
+            dir.mkdirs();
+        }
+        File modelsFile = Play.application().getFile("myresources/models/" + pipelineName);
         try {
-            pipelineModel.write().overwrite().save(path);
+            pipelineModel.write().overwrite().save(modelsFile.getAbsolutePath());
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     private void saveResults(Dataset<Row> results) {
-        results.write().format("json").mode("overwrite").save("myresources/results/" + pipelineName);
+        File dir = Play.application().getFile("myresources/results");
+        if(!dir.exists()) {
+            dir.mkdirs();
+        }
+        try {
+            File resultsFile = Play.application().getFile("myresources/results/" + pipelineName);
+            results.write().format("json").mode("overwrite").save(resultsFile.getAbsolutePath());
+            Logger.info("Saved the results to: " + resultsFile.getAbsolutePath());
+        } catch (Exception e) {
+            Logger.error("File path not found: " + Play.application().getFile("myresources/results/" + pipelineName).getAbsolutePath());
+        }
     }
 
     public Dataset<Row> trainPipeline(String pipelineName, String path, String type) {

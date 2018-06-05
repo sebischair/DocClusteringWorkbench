@@ -3,6 +3,7 @@ package controllers;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import model.PersistentEntity;
+import play.Play;
 import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -37,7 +38,7 @@ public class ClusteringPipelineController extends Controller {
 
     public Result getLibraries() {
         try {
-            FileInputStream conf = new FileInputStream("conf/libraries.json");
+            FileInputStream conf = new FileInputStream(Play.application().getFile("conf/libraries.json"));
             JsonNode libraries = Json.parse(conf);
             return ok(libraries);
         } catch (FileNotFoundException e) {

@@ -9,6 +9,7 @@ import model.amelie.Issue;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import play.Logger;
+import play.Play;
 import play.libs.Json;
 import play.libs.ws.WSClient;
 import play.mvc.Controller;
@@ -96,7 +97,7 @@ public class ClusterController extends Controller {
             miningAttributes.add("name");
             miningAttributes.add("summary");
             miningAttributes.add("description");
-            filepath = "myresources/datasets/" + projectKey;
+            filepath = Play.application().path().getAbsolutePath() + "/myresources/datasets/" + projectKey;
             StringBuilder records = jsonToCSVConverter(decisions, miningAttributes);
             try {
                 saveDataAsCSV(filepath, records);
