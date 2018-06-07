@@ -28,7 +28,11 @@ public class ClusteringPipelineController extends Controller {
 
     public Result getPipeline(String pipelineName){
         PersistentEntity pipeline = PipelineService.getClusterPipeline(pipelineName);
-        return ok(Json.parse(StaticFunctions.deserializeToJSON(pipeline)));
+        if(pipeline != null) {
+            return ok(Json.parse(StaticFunctions.deserializeToJSON(pipeline)));
+        } else {
+            return ok(Json.newObject());
+        }
     }
 
     public Result getTrainedPipelines() {
