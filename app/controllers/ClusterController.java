@@ -21,6 +21,7 @@ import spark.SparkSessionComponent;
 import spark.pipelines.SparkPipelineFactory;
 import spark.pipelines.SparkPredictPipeline;
 import util.StaticFunctions;
+import views.html.index;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -39,6 +40,17 @@ import static spark.utils.SparkDatasetUtil.extractClusterTablefromDataset;
 public class ClusterController extends Controller {
     @Inject
     WSClient ws;
+
+    @Inject
+    private WebJarAssets webJarAssets;
+
+    public Result index(){
+        return ok(index.render(webJarAssets));
+    }
+
+    public Result any(String any) {
+        return ok(views.html.index.render(webJarAssets));
+    }
 
     public Result getClusterResults() {
         List<String> results = PipelineService.getAllClustersResults();

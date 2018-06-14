@@ -4,7 +4,7 @@
 
 # An example controller showing a sample home page
 
-GET         /                                   controllers.HomeController.index
+GET         /                                   controllers.ClusterController.index
 
 GET         /clustering/libraries               controllers.ClusteringPipelineController.getLibraries
 GET         /clustering/pipelines               controllers.ClusteringPipelineController.getTrainedPipelines
@@ -20,17 +20,10 @@ POST        /clustering/pipeline/predict        controllers.ClusterController.ge
 GET         /pipeline/updateSimilarDocuments/:projectKey     controllers.ClusterController.updateSimilarDocuments(projectKey: String)
 GET         /similarDecisions                   controllers.ClusterController.updateSimilarDocumentsForDD(issueKey: String)
 
-#Example Pipelines
-GET         /spark/kmeans/example1              controllers.ExampleController.runPipelineExample1
-GET         /spark/kmeans/example2              controllers.ExampleController.runPipelineExample2
-GET         /spark/predict/:modelName           controllers.ExampleController.runPredictPipelineExample1(modelName: String)
-GET         /weka/dl/example1                   controllers.ExampleController.runDataSourceExample
-
-
 # Map static resources from the /public folder to the /assets URL path
 GET         /assets/*file                       controllers.Assets.versioned(path="/public", file: Asset)
 GET         /webjars/*file                      controllers.WebJarAssets.at(file)
 
 
 # Any possible route, forwarded to Angular in order to allow html5Mode rather than hashbanging
-GET     /*any                           controllers.HomeController.any(any)
+GET     /*any                           controllers.ClusterController.any(any)
